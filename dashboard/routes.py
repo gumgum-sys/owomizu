@@ -606,20 +606,25 @@ _AUTOENHANCE_DEFAULTS = {
 
 
 def _merge_autoenhance_defaults(stored):
-    stored = stored if isinstance(stored, dict) else {}
+    def _as_dict(value):
+        return value if isinstance(value, dict) else {}
+
+    stored = _as_dict(stored)
     merged = {"enabled": stored.get("enabled", _AUTOENHANCE_DEFAULTS["enabled"])}
 
-    aug_s = stored.get("autoUseGems") or {}
+    aug_s = _as_dict(stored.get("autoUseGems"))
     aug_d = _AUTOENHANCE_DEFAULTS["autoUseGems"]
+    aug_tiers = _as_dict(aug_s.get("tiers"))
+    aug_types = _as_dict(aug_s.get("gemTypes"))
     merged["autoUseGems"] = {
         "enabled": aug_s.get("enabled", aug_d["enabled"]),
         "cooldownMinutes": aug_s.get("cooldownMinutes", aug_d["cooldownMinutes"]),
         "useLowestFirst": aug_s.get("useLowestFirst", aug_d["useLowestFirst"]),
-        "tiers": {k: (aug_s.get("tiers") or {}).get(k, v) for k, v in aug_d["tiers"].items()},
-        "gemTypes": {k: (aug_s.get("gemTypes") or {}).get(k, v) for k, v in aug_d["gemTypes"].items()}
+        "tiers": {k: aug_tiers.get(k, v) for k, v in aug_d["tiers"].items()},
+        "gemTypes": {k: aug_types.get(k, v) for k, v in aug_d["gemTypes"].items()}
     }
 
-    aie_s = stored.get("autoInvestEssence") or {}
+    aie_s = _as_dict(stored.get("autoInvestEssence"))
     aie_d = _AUTOENHANCE_DEFAULTS["autoInvestEssence"]
     merged["autoInvestEssence"] = {
         "enabled": aie_s.get("enabled", aie_d["enabled"]),
