@@ -133,9 +133,8 @@ betaver/
 beta/
 mizuowoapi/
 OWOMIZU-Captcha-Solver/
-svetlana/
+.impeccable
 
-betasense/
 
 # Tests
 tests/
@@ -144,3 +143,5 @@ relay/.wrangler/
 
 # Captcha model weights (large binary, download separately)
 captcha_solver/*.onnx
+logs.txt
+relay
