@@ -119,11 +119,6 @@
         },
         "stopCodeIfFailedToSolve": false
     },
-    "batteryCheck": {
-        "enabled": false,
-        "minPercentage": 15,
-        "refreshInterval": 300
-    },
     "accountRotation": {
         "enabled": false,
         "accountsPerShift": 2,

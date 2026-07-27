@@ -205,60 +205,6 @@ def refresh_bot_settings(changed_command=None, enabled=None):
     except Exception as e:
         print(f"Error refreshing bot settings: {e}")
 
-if not on_mobile and not misc_dict["hostMode"]:
-    try:
-        if global_settings_dict["batteryCheck"]["enabled"]:
-            import psutil
-    except Exception as e:
-        print(f"ImportError: {e}")
-
-def batteryCheckFunc():
-    cnf = global_settings_dict["batteryCheck"]
-    try:
-        if on_mobile:
-            while True:
-                time.sleep(cnf["refreshInterval"])
-                try:
-                    battery_status = os.popen("termux-battery-status").read()
-                except Exception as e:
-                    console.print(
-                        f"system - Battery check failed!!".center(console_width - 2),
-                        style="red ",
-                    )
-                battery_data = json.loads(battery_status)
-                percentage = battery_data["percentage"]
-                console.print(
-                    f"system - Current battery •> {percentage}".center(console_width - 2),
-                    style="blue ",
-                )
-                if percentage < int(cnf["minPercentage"]):
-                    break
-        else:
-            while True:
-                time.sleep(cnf["refreshInterval"])
-                try:
-                    battery = psutil.sensors_battery()
-                    if battery is not None:
-                        percentage = int(battery.percent)
-                        console.print(
-                            f"system - Current battery •> {percentage}".center(console_width - 2),
-                            style="blue ",
-                        )
-                        if percentage < int(cnf["minPercentage"]):
-                            break
-                except Exception as e:
-                    console.print(
-                        f"-system - Battery check failed!!.".center(console_width - 2),
-                        style="red ",
-                    )
-    except Exception as e:
-        print("battery check", e)
-    os._exit(0)
-
-if global_settings_dict["batteryCheck"]["enabled"]:
-    loop_thread = threading.Thread(target=batteryCheckFunc, daemon=True)
-    loop_thread.start()
-
 def popup_main_loop():
     root = tk.Tk()
     root.withdraw()
@@ -585,7 +531,7 @@ if __name__ == "__main__":
         console.rule(f"[bold blue1]version - {version}", style="navy_blue")
 
     from dotenv import load_dotenv
-    load_dotenv()
+    load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
 
     tokens_env = os.getenv("TOKENS")
     if tokens_env:
@@ -631,7 +577,7 @@ if __name__ == "__main__":
 
 
     if not misc_dict["console"]["hideStarRepoMessage"]:
-        console.print("Star the repo in our github page if you want us to continue maintaining this proj :>.", style = "thistle1")
+        console.print("Star the repo in our github page, it keeps us motivated to maintain and improve this project for everyone.", style = "thistle1")
     console.rule(style="navy_blue")
 
     if not on_mobile:
