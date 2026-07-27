@@ -26,6 +26,7 @@ from utils import helpers
 from utils.misspell import misspell_word, should_misspell
 from utils.headers import generate_headers
 from utils.watchdog import load_watchdog
+from utils.battery import load_battery
 from utils.error_report import ErrorReporter
 from cogs.comp import headers as comp_headers
 
@@ -84,7 +85,8 @@ class MyClient(commands.Bot):
             "captcha": False,
             "sleep": False,
             "hold_handler": False,
-            "rate_limited": False
+            "rate_limited": False,
+            "battery": False
         }
 
         with open("config/misc.json", "r") as config_file:
@@ -384,12 +386,14 @@ class MyClient(commands.Bot):
     def refresh_commands_dict(self):
         commands_dict = self.settings_dict["commands"]
         watchdog_config = load_watchdog()
+        battery_config = load_battery()
         reaction_bot_dict = self.settings_dict["defaultCooldowns"]["reactionBot"]
         huntbot_active = commands_dict["autoHuntBot"]["enabled"]
 
         self.commands_dict = {
             "autoenhance": self.settings_dict.get("autoEnhance", {}).get("enabled", False),
             "autosell": self.settings_dict.get("autoSell", {}).get("enabled", False),
+            "battery": battery_config.get("enabled", False),
             "battle": commands_dict["battle"]["enabled"] and not reaction_bot_dict["hunt_and_battle"] and not huntbot_active,
             "boss": self.settings_dict.get("bossBattle", {}).get("enabled", False),
             "captcha": True,
@@ -610,6 +614,7 @@ class MyClient(commands.Bot):
                 or self.command_handler_status["sleep"]
                 or self.command_handler_status["captcha"]
                 or self.command_handler_status.get("rate_limited", False)
+                or self.command_handler_status.get("battery", False)
             ):
                 if priority and (
                     not self.command_handler_status["sleep"]

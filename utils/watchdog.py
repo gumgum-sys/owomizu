@@ -54,6 +54,7 @@ def is_paused(command_handler_status):
         or s.get("sleep", False)
         or s.get("hold_handler", False)
         or s.get("rate_limited", False)
+        or s.get("battery", False)
     )
 
 
