@@ -16,6 +16,7 @@ CONFIG_DIR = "config"
 SETTINGS_PATH = os.path.join(CONFIG_DIR, "settings.json")
 GLOBAL_SETTINGS_PATH = os.path.join(CONFIG_DIR, "global_settings.json")
 TOKENS_PATH = "tokens.txt"
+ENV_PATH = ".env"
 BACKUP_DIR = "backup_configs"
 
 GITHUB_API_URL = "https://api.github.com/repos/kiy0w0/owomizu"
@@ -93,6 +94,8 @@ def create_backup():
             shutil.copy2(GLOBAL_SETTINGS_PATH, backup_path)
         if os.path.exists(TOKENS_PATH):
             shutil.copy2(TOKENS_PATH, backup_path)
+        if os.path.exists(ENV_PATH):
+            shutil.copy2(ENV_PATH, backup_path)
 
         console.print(f"[green]💾 Backup created: {backup_path}[/green]")
         return backup_path
@@ -182,28 +185,60 @@ def merge_configurations(backup_path):
         except Exception as e:
             console.print(f"[red]❌ Failed to restore tokens: {e}[/red]")
 
+    backup_env_path = os.path.join(backup_path, ".env")
+    if os.path.exists(backup_env_path):
+        try:
+            with open(backup_env_path, "r") as backup_env:
+                env_content = backup_env.read()
+            with open(ENV_PATH, "w") as env_file:
+                env_file.write(env_content)
+            console.print("[green]✅ .env restored[/green]")
+        except Exception as e:
+            console.print(f"[red]❌ Failed to restore .env: {e}[/red]")
+
+def collect_untracked_for_backup(backup_path, untracked_lines):
+
+    dest = os.path.join(backup_path, "untracked")
+    os.makedirs(dest, exist_ok=True)
+    for line in untracked_lines:
+        rel = line.strip()
+        if not rel:
+            continue
+        src = rel
+        if not os.path.exists(src):
+            continue
+        target = os.path.join(dest, rel)
+        os.makedirs(os.path.dirname(target), exist_ok=True)
+        if os.path.isdir(src):
+            shutil.copytree(src, target, dirs_exist_ok=True)
+        else:
+            shutil.copy2(src, target)
+
 def perform_git_update(backup_path):
 
     try:
         repo_dir = "."
         os.chdir(repo_dir)
 
+        stashed = False
         with console.status("[bold cyan]🔍 Checking for uncommitted changes..."):
-            status_result = subprocess.run(['git', 'status', '--porcelain'], 
+            status_result = subprocess.run(['git', 'status', '--porcelain'],
                                          capture_output=True, text=True, check=True)
 
         if status_result.stdout:
             console.print("[yellow]⚠️ Uncommitted changes detected. Stashing changes...[/yellow]")
             with console.status("[bold yellow]📦 Stashing changes..."):
                 subprocess.run(['git', 'stash'], check=True)
+            stashed = True
             sleep(1)
 
         with console.status("[bold cyan]🔍 Checking for untracked files..."):
-            untracked_files = subprocess.run(['git', 'ls-files', '--others', '--exclude-standard'], 
+            untracked_files = subprocess.run(['git', 'ls-files', '--others', '--exclude-standard'],
                                            capture_output=True, text=True, check=True)
 
         if untracked_files.stdout:
-            console.print("[yellow]⚠️ Untracked files detected. Cleaning up...[/yellow]")
+            console.print("[yellow]⚠️ Untracked files detected. Backing up then cleaning...[/yellow]")
+            collect_untracked_for_backup(backup_path, untracked_files.stdout.splitlines())
             with console.status("[bold red]🧹 Cleaning untracked files..."):
                 subprocess.run(['git', 'clean', '-f', '-d'], check=True)
                 sleep(1)
@@ -212,8 +247,13 @@ def perform_git_update(backup_path):
             subprocess.run(['git', 'checkout', 'main'], check=True)
 
         with console.status("[bold green]⬇️ Pulling latest changes from GitHub..."):
-            result = subprocess.run(['git', 'pull', 'origin', 'main'], 
+            result = subprocess.run(['git', 'pull', 'origin', 'main'],
                                   capture_output=True, text=True, check=True)
+            sleep(1)
+
+        if stashed:
+            with console.status("[bold yellow]📦 Restoring stashed changes..."):
+                subprocess.run(['git', 'stash', 'pop'], check=True)
             sleep(1)
 
         if "Already up to date" in result.stdout:

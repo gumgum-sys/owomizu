@@ -43,9 +43,6 @@ def enforce_auth():
     config = load_auth_config()
     auth_settings = config.get("authentication", {})
 
-    if not auth_settings.get("enabled", False):
-        return None
-
     if is_local_request():
         return None
 
@@ -54,6 +51,9 @@ def enforce_auth():
         allowed_ips = set(web_access.get("allowed_ips", [])) | LOCAL_ADDRESSES
         if request.remote_addr not in allowed_ips:
             return challenge("External access is disabled", status=403)
+
+    if not auth_settings.get("enabled", False):
+        return None
 
     ip = request.remote_addr or "unknown"
     now = time.time()

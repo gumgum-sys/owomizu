@@ -8,6 +8,7 @@
   },
   "web_access": {
     "allow_external": false,
+    "behind_proxy": false,
     "allowed_ips": [
       "127.0.0.1",
       "localhost"
