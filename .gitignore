@@ -144,4 +144,7 @@ relay/.wrangler/
 # Captcha model weights (large binary, download separately)
 captcha_solver/*.onnx
 logs.txt
+
+# Local debug scripts
+_debug_hb.py
 relay
