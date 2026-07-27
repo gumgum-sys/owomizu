@@ -64,7 +64,7 @@ from rich.panel import Panel
 from utils.misspell import misspell_word
 from utils import state
 from utils import helpers
-from utils.helpers import compare_versions, printBox, resource_path, get_weekday, get_hour, get_date, get_local_ip, console, lock
+from utils.helpers import compare_versions, printBox, resource_path, get_weekday, get_hour, get_date, get_local_ip, console, lock, backoff_seconds
 from utils.state import list_user_ids as listUserIds
 from bot.client import MyClient
 from dashboard import create_app
@@ -394,6 +394,7 @@ def run_bot(token, channel_id, global_settings_dict):
     try:
         logging.getLogger("discord.client").setLevel(logging.ERROR)
 
+        attempt = 0
         while True:
             client = MyClient(token, channel_id, global_settings_dict)
 
@@ -408,7 +409,9 @@ def run_bot(token, channel_id, global_settings_dict):
                          if "WS_SEND" in str(e) and "55" in str(e):
                             printBox("Broken pipe error detected. Restarting bot...", "bold red")
                             if client in state.bot_instances: state.bot_instances.remove(client)
-                            continue 
+                            time.sleep(backoff_seconds(attempt))
+                            attempt += 1
+                            continue
                          else:
                             printBox(f"Curl error: {e}", "bold red")
                             if client in state.bot_instances: state.bot_instances.remove(client)
@@ -416,6 +419,9 @@ def run_bot(token, channel_id, global_settings_dict):
 
                     printBox(f"Unknown error when running bot: {e}", "bold red")
                     if client in state.bot_instances: state.bot_instances.remove(client)
+                    attempt += 1
+                    time.sleep(backoff_seconds(attempt))
+                    continue
 
             else:
                 try:
@@ -465,6 +471,9 @@ def run_bot(token, channel_id, global_settings_dict):
 
             if getattr(client, "should_exit", False):
                 break
+
+            time.sleep(backoff_seconds(attempt))
+            attempt += 1
 
     except Exception as e:
         printBox(f"Error starting bot: {e}", "bold red")
