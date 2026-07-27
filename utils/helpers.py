@@ -88,3 +88,7 @@ def get_local_ip():
             return s.getsockname()[0]
     except Exception:
         return 'localhost'
+
+def backoff_seconds(attempt, base=5, cap=300):
+    n = max(0, attempt)
+    return min(base * (2 ** n), cap)
