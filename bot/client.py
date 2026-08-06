@@ -608,17 +608,18 @@ class MyClient(commands.Bot):
                 await self.log(f"Error - Command data missing 'id' field. Data: {cmd_data}", "#c25560")
                 return
 
+            if self.command_handler_status["sleep"] and not priority:
+                return
+
             while (
                 not self.command_handler_status["state"]
                 or self.command_handler_status["hold_handler"]
-                or self.command_handler_status["sleep"]
                 or self.command_handler_status["captcha"]
                 or self.command_handler_status.get("rate_limited", False)
                 or self.command_handler_status.get("battery", False)
             ):
                 if priority and (
-                    not self.command_handler_status["sleep"]
-                    and not self.command_handler_status["hold_handler"]
+                    not self.command_handler_status["hold_handler"]
                     and not self.command_handler_status["captcha"]
                 ):
                     break
@@ -640,13 +641,16 @@ class MyClient(commands.Bot):
 
             if remaining > 0.5 and not quick:
                  await self.log(f"⏳ Mizu Cooldown System: {cmd_data['id']} is on cooldown ({remaining:.1f}s left). Pausing...", "#555555")
-                 await asyncio.sleep(remaining + 0.5) 
-                 if not self.command_handler_status["state"]: 
+                 await asyncio.sleep(remaining + 0.5)
+                 if not self.command_handler_status["state"]:
                      return
 
             async with self.lock:
+                if self.cmds_state[cmd_data["id"]]["in_queue"]:
+                    await self.log(f"Error - command with id: {cmd_data['id']} already in queue, being attempted to be added back.", "#c25560")
+                    return
                 await self.queue.put((
-                    priority_int, 
+                    priority_int,
                     next(self.cmd_counter),
                     deepcopy(cmd_data)
                 ))
