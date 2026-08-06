@@ -80,6 +80,8 @@ class Commands(commands.Cog):
         try:
             cnf = self.bot.settings_dict["defaultCooldowns"]["commandHandler"]
             priority, _, cmd = await self.bot.queue.get()
+            while self.bot.command_handler_status.get("sleep", False):
+                await asyncio.sleep(1.0)
             cmd_id = cmd.get("id")
 
             if priority != 0:
