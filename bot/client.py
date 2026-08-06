@@ -145,18 +145,6 @@ class MyClient(commands.Bot):
         if state.config_updated and (time.time() - state.config_updated < 6):
              await self.update_config()
 
-    @tasks.loop(seconds=1)
-    async def random_sleep(self):
-        sleep_dict = self.settings_dict["sleep"]
-        await asyncio.sleep(self.random_float(sleep_dict["checkTime"]))
-        if self.random.randint(1, 100) > (100 - sleep_dict["frequencyPercentage"]):
-            await self.set_stat(False, "sleep")
-            sleep_time = self.random_float(sleep_dict["sleeptime"])
-            await self.log(f"sleeping for {sleep_time}", "#87af87")
-            await asyncio.sleep(sleep_time)
-            await self.set_stat(True, "sleep stop")
-            await self.log("sleeping finished!", "#87af87")
-
     @tasks.loop(seconds=7)
     async def safety_check_loop(self):
         pass
@@ -668,9 +656,14 @@ class MyClient(commands.Bot):
                     if cmd_data:
                         if command == cmd_data:
                             self.checks.pop(index)
+                            resolved_id = cmd_data.get("id")
+                            if resolved_id and resolved_id in self.cmds_state:
+                                self.cmds_state[resolved_id]["in_queue"] = False
                     else:
                         if command.get("id", None) == id:
                             self.checks.pop(index)
+                            if id and id in self.cmds_state:
+                                self.cmds_state[id]["in_queue"] = False
         except Exception as e:
             await self.log(f"Error: {e}, during remove_queue", "#c25560")
 
@@ -1005,9 +998,6 @@ class MyClient(commands.Bot):
 
         if self.global_settings_dict["offlineStatus"]:
             self.presence.start()
-
-        if self.settings_dict["sleep"]["enabled"]:
-            self.random_sleep.start()
 
         if self.settings_dict["cashCheck"]:
             asyncio.create_task(self.check_for_cash())
