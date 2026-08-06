@@ -543,7 +543,17 @@ class Captcha(commands.Cog):
                             self._solve_attempt = 0
                             self._solving_active = True
 
-                            auto_solved = await self._attempt_solve(strategy_index=0)
+                            auto_solved = False
+                            while self._solve_attempt <= self._solve_max_retries and self._solve_attempt < MAX_SOLVE_STRATEGIES:
+                                auto_solved = await self._attempt_solve(strategy_index=self._solve_attempt)
+                                if auto_solved:
+                                    break
+                                self._solve_attempt += 1
+                                if self._solve_attempt <= self._solve_max_retries and self._solve_attempt < MAX_SOLVE_STRATEGIES:
+                                    await asyncio.sleep(self.bot.random_float([1.0, 2.0]))
+
+                            if not auto_solved:
+                                self._solving_active = False
                         else:
                             await self.bot.log("🧩 Auto-Solver: Failed to download captcha image", "#c25560")
                     except Exception as e:
