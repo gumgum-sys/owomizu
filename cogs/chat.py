@@ -55,7 +55,7 @@ class Chat(commands.Cog):
             await self.bot.log("stopping Mizu..", "#87875f")
             self.bot.should_exit = True
             await self.bot.close()
-            import os; os._exit(0)
+            os._exit(0)
 
         elif f"{p}{cnf['commandToStartUser']}" in content_lower:
             await self.bot.log("starting Mizu..", "#87875f")
