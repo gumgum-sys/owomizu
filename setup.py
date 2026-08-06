@@ -49,7 +49,7 @@ def print_banner():
  M I Z U   N E T W O R K   水
     """)
     print(f"{RESET}")
-    print(f"{GREEN}Interactive Setup Wizard — v1.8.0 >_<{RESET}\n")
+    print(f"{GREEN}Interactive Setup Wizard - v1.8.0 >_<{RESET}\n")
 
 
 def main():
@@ -78,9 +78,18 @@ def main():
         if more != 'y':
             break
 
-    with open(".env", "w") as f:
-        f.write('TOKENS="' + ";".join(tokens) + '"\n')
-    print(f"{GREEN}Accounts saved to .env!{RESET}\n")
+    if os.path.exists(".env"):
+        confirm = input(f"{YELLOW}.env already exists. Overwrite? This will replace existing tokens. (y/n): {RESET}").lower()
+        if confirm != 'y':
+            print(f"{CYAN}Skipped .env — keeping existing tokens.{RESET}\n")
+        else:
+            with open(".env", "w") as f:
+                f.write('TOKENS="' + ";".join(tokens) + '"\n')
+            print(f"{GREEN}Accounts saved to .env!{RESET}\n")
+    else:
+        with open(".env", "w") as f:
+            f.write('TOKENS="' + ";".join(tokens) + '"\n')
+        print(f"{GREEN}Accounts saved to .env!{RESET}\n")
 
     print(f"{YELLOW}[2] Behavior Profile{RESET}")
     print("Choose a farming style:")
@@ -131,7 +140,7 @@ def main():
                 "blackjack": {}
             },
             "giveawayJoiner": {"enabled": False, "channelsToJoin": [], "cooldown": [40, 100], "messageRangeToCheck": 6},
-            "sleep": {"enabled": True, "frequencyPercentage": 50, "checkTime": [10, 20], "sleeptime": [300, 600]},
+            "sleep": {"enabled": True, "frequencyPercentage": 50, "checkTime": [10, 20], "sleeptime": [5, 10]},
             "misspell": {
                 "enabled": True,
                 "frequencyPercentage": 1,
