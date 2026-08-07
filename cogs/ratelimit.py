@@ -16,6 +16,10 @@ def parse_slowdown_wait(content: str) -> int:
     return 5
 
 
+_SLOWDOWN_MULTIPLIER = 2.5
+_SLOWDOWN_BOOST_WINDOW = 60
+
+
 class RateLimitHandler(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -26,6 +30,8 @@ class RateLimitHandler(commands.Cog):
         self._paused = False
         self._total_rate_limits = 0
         self._idle_triggered = False
+        self._slowdown_boost_task = None
+        self._original_between_commands = None
 
     @commands.Cog.listener()
     async def on_http_ratelimit(self, payload):
@@ -119,6 +125,29 @@ class RateLimitHandler(commands.Cog):
         except Exception as e:
             await self.bot.log(f"Error - idle RPP trigger: {e}", "#c25560")
 
+    async def _apply_slowdown_boost(self):
+        try:
+            cnf = self.bot.settings_dict["defaultCooldowns"]["commandHandler"]
+            if self._original_between_commands is None:
+                self._original_between_commands = list(cnf["betweenCommands"])
+            boosted = [v * _SLOWDOWN_MULTIPLIER for v in self._original_between_commands]
+            cnf["betweenCommands"] = boosted
+            await self.bot.log(
+                f"Slow-down cooldown boost active — betweenCommands x{_SLOWDOWN_MULTIPLIER} "
+                f"({self._original_between_commands} → {boosted}) for {_SLOWDOWN_BOOST_WINDOW}s",
+                "#ff9800",
+            )
+            self.bot.add_dashboard_log("system", f"Slow-down boost: betweenCommands x{_SLOWDOWN_MULTIPLIER} for {_SLOWDOWN_BOOST_WINDOW}s", "warning")
+            await asyncio.sleep(_SLOWDOWN_BOOST_WINDOW)
+            cnf["betweenCommands"] = self._original_between_commands
+            self._original_between_commands = None
+            await self.bot.log("Slow-down cooldown boost expired — betweenCommands restored", "#51cf66")
+            self.bot.add_dashboard_log("system", "Slow-down boost expired, cooldown restored", "success")
+        except asyncio.CancelledError:
+            pass
+        finally:
+            self._slowdown_boost_task = None
+
     async def _trigger_gems_scan(self):
         try:
             gems_cfg = self.bot.settings_dict.get("autoUse", {}).get("gems", {})
@@ -171,6 +200,9 @@ class RateLimitHandler(commands.Cog):
                 f"OWO Slow-down detected — syncing {wait_seconds}s pause",
                 "#ff6b6b",
             )
+            if self._slowdown_boost_task and not self._slowdown_boost_task.done():
+                self._slowdown_boost_task.cancel()
+            self._slowdown_boost_task = asyncio.ensure_future(self._apply_slowdown_boost())
             await asyncio.sleep(wait_seconds)
             self.bot.command_handler_status["rate_limited"] = False
             return
