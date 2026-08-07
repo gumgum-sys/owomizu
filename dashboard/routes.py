@@ -262,6 +262,20 @@ async def get_dashboard_stats():
             total_cowoncy = 0
             total_captchas = 0
 
+            active_clients = {}
+            for client in state.bot_instances:
+                try:
+                    cid = str(client.user.id)
+                    s = client.command_handler_status
+                    active_clients[cid] = s
+                except Exception:
+                    pass
+
+            log_counts = {}
+            for entry in state.command_logs:
+                aid = str(entry.get("account_id", ""))
+                log_counts[aid] = log_counts.get(aid, 0) + 1
+
             for row in account_rows:
                 user_id = row["user_id"]
                 cowoncy = row["cowoncy"] or 0
@@ -270,14 +284,30 @@ async def get_dashboard_stats():
                 total_cowoncy += cowoncy
                 total_captchas += captchas
 
-                user_display = f"User-{str(user_id)[-4:]}"
+                uid = str(user_id)
+                user_display = f"User-{uid[-4:]}"
+                cs = active_clients.get(uid)
+
+                if cs is None:
+                    live_status = "offline"
+                elif cs.get("captcha"):
+                    live_status = "captcha"
+                elif cs.get("sleep"):
+                    live_status = "sleeping"
+                elif cs.get("battery"):
+                    live_status = "paused"
+                else:
+                    live_status = "online"
 
                 stats_data["accounts"].append({
                     "user_id": user_id,
                     "user_display": user_display,
                     "cowoncy": cowoncy,
                     "cowoncy_formatted": f"{cowoncy:,}",
-                    "captchas": captchas
+                    "captchas": captchas,
+                    "commands_sent": log_counts.get(uid, 0),
+                    "is_active": cs is not None,
+                    "live_status": live_status,
                 })
 
             stats_data["balance"] = total_cowoncy

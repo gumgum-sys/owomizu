@@ -498,16 +498,21 @@ class MizuDashboard {
         }
         
         
+        const statusLabels = { online: 'Online', sleeping: 'Sleeping', captcha: 'Captcha!', paused: 'Paused', offline: 'Offline' };
+
         this.stats.accounts.forEach(account => {
             const accountCard = document.createElement('div');
             accountCard.className = 'account-card';
-            
+
+            const statusClass = account.live_status || 'online';
+            const statusLabel = statusLabels[statusClass] || 'Online';
+
             accountCard.innerHTML = `
                 <div class="account-header">
                     <span class="account-id">${account.user_display}</span>
                     <div class="account-status">
-                        <div class="status-dot online"></div>
-                        <span>Online</span>
+                        <div class="status-dot ${statusClass}"></div>
+                        <span>${statusLabel}</span>
                     </div>
                 </div>
                 <div class="account-stats">
@@ -517,6 +522,13 @@ class MizuDashboard {
                             <span>Cowoncy</span>
                         </div>
                         <div class="account-stat-value cowoncy">${account.cowoncy_formatted}</div>
+                    </div>
+                    <div class="account-stat">
+                        <div class="account-stat-label">
+                            <i class="fas fa-terminal"></i>
+                            <span>Commands</span>
+                        </div>
+                        <div class="account-stat-value">${account.commands_sent ?? 0}</div>
                     </div>
                     <div class="account-stat">
                         <div class="account-stat-label">
