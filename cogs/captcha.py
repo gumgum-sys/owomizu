@@ -76,8 +76,21 @@ def is_termux():
 on_mobile = is_termux()
 
 if not on_mobile:
-    from plyer import notification
-    from playsound3 import playsound
+    try:
+        from plyer import notification
+    except ImportError:
+        notification = None
+    try:
+        from playsound3 import playsound
+    except ImportError:
+        try:
+            import winsound
+            def playsound(sound_file):
+                winsound.Beep(1500, 500)
+        except Exception:
+            def playsound(sound_file):
+                pass
+
 
 def run_system_command(command, timeout, retry=False, delay=5):
     def target():

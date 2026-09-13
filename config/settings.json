@@ -31,7 +31,7 @@
             ]
         },
         "hunt": {
-            "enabled": false,
+            "enabled": true,
             "cooldown": [
                 15,
                 16
@@ -123,7 +123,7 @@
             ]
         },
         "autoHuntBot": {
-            "enabled": true,
+            "enabled": false,
             "cashToSpend": 10000,
             "upgrader": {
                 "enabled": true,
