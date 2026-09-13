@@ -100,10 +100,32 @@ class Others(commands.Cog):
         auto_team = self.bot.settings_dict.get("autoTeam", {})
         if auto_team.get("enabled", True):
             self._audit_task = asyncio.create_task(self._team_audit_loop())
+        # Startup: buka semua crate di inventory lalu trigger weapon check
+        asyncio.create_task(self._startup_open_crates())
 
     async def cog_unload(self):
         if self._audit_task and not self._audit_task.done():
             self._audit_task.cancel()
+
+    async def _startup_open_crates(self):
+        """Pas startup, tunggu bot ready, buka semua crate, lalu auto-equip weapon terbaik."""
+        await self.bot.wait_until_ready()
+        await asyncio.sleep(self.bot.random.uniform(20.0, 30.0))
+        auto_use = self.bot.settings_dict.get("autoUse", {})
+        if auto_use.get("autoCrate", False):
+            await self.bot.log("🎁 Startup: Opening available crates...", "#E7DA90")
+            crate_cmd = {
+                "cmd_name": self.bot.alias["crate"]["normal"],
+                "cmd_arguments": "all",
+                "prefix": True,
+                "checks": False,
+                "id": "crate",
+            }
+            await self.bot.put_queue(crate_cmd, priority=True)
+            # Weapon check 8 detik setelah crate dibuka
+            inv_cog = self.bot.get_cog("Inventory")
+            if inv_cog and hasattr(inv_cog, "trigger_check"):
+                asyncio.create_task(inv_cog.trigger_check(delay=8.0))
 
     async def _team_audit_loop(self):
         await self.bot.wait_until_ready()
@@ -150,10 +172,23 @@ class Others(commands.Cog):
         auto_team = self.bot.settings_dict.get("autoTeam", {})
         if not auto_team.get("enabled", True) or not auto_team.get("rotateOnRareCatch", True):
             return
-        rarity_label = catch_data.get("rarity", "rare").upper()
-        await self.bot.log(f"🌟 Rare catch detected: {rarity_label}! Triggering team audit...", "#ffd43b")
+
+        rarity_label = catch_data.get("rarity", "rare").lower()
+        caught_weight = RANK_WEIGHTS.get(rarity_label, 1)
+
+        # Hanya trigger kalau hewan baru LEBIH BAGUS dari member terlemah di tim
+        current_min = getattr(self, "_current_team_min_weight", 0)
+        if self.current_team and caught_weight <= current_min:
+            await self.bot.log(
+                f"⏭️ Skipping team audit — caught {rarity_label.upper()} (w={caught_weight}) "
+                f"not better than current team min (w={current_min})", "#888888"
+            )
+            return
+
+        await self.bot.log(f"🌟 Upgrade potential! Caught {rarity_label.upper()} (w={caught_weight}) > team min (w={current_min}). Auditing...", "#ffd43b")
         await asyncio.sleep(self.bot.random.uniform(2.5, 5.0))
-        await self.request_team_refresh(force=True)
+        # force=False → pakai cooldown 180s supaya tidak spam
+        await self.request_team_refresh(force=False)
 
     async def _apply_battle_team(self, animals):
         self._team_updating = True
@@ -180,8 +215,36 @@ class Others(commands.Cog):
                 await asyncio.sleep(self.bot.random.uniform(1.0, 1.8))
 
             self.current_team = names
-            await self.bot.log(f"✅ Battle Team Rotation Complete: {names}", "#51cf66")
+            self._current_team_min_weight = min(a["weight"] for a in animals)
+            await self.bot.log(f"✅ Battle Team Rotation Complete: {names} (min_weight={self._current_team_min_weight})", "#51cf66")
             self.bot.add_dashboard_log("battle", f"Team updated: {', '.join(names)}", "success")
+
+            # Trigger weapon check to auto-equip top weapons to new team members
+            inv_cog = self.bot.get_cog("Inventory")
+            if inv_cog and hasattr(inv_cog, "equip_team_weapons"):
+                asyncio.create_task(inv_cog.equip_team_weapons(names))
+
+            # --- Dynamic Era Evolution: auto-adjust sell rarity scope based on team tier ---
+            lowest_weight = min(a["weight"] for a in animals)
+            if lowest_weight >= 70:        # Mythical / Legendary / Fabled
+                era_name = "MYTHICAL ERA 🔮"
+                sell_rarity = ["c", "u", "r", "e"]
+            elif lowest_weight >= 60:      # Epic
+                era_name = "EPIC ERA ⚡"
+                sell_rarity = ["c", "u", "r"]
+            else:                          # Rare (default)
+                era_name = "RARE ERA 🌿"
+                sell_rarity = ["c", "u"]
+
+            current_rarity = self.bot.settings_dict["commands"]["sell"].get("rarity", ["c", "u"])
+            if current_rarity != sell_rarity:
+                self.bot.settings_dict["commands"]["sell"]["rarity"] = sell_rarity
+                await self.bot.log(
+                    f"📈 Era Evolution → [{era_name}] Sell scope: {current_rarity} → {sell_rarity}", "#ff9500"
+                )
+                self.bot.add_dashboard_log("battle", f"Era upgraded: {era_name} | sell: {sell_rarity}", "success")
+            else:
+                await self.bot.log(f"📊 [{era_name}] Sell scope stable: {sell_rarity}", "#888888")
 
         except Exception as e:
             await self.bot.log(f"Error rotating battle team: {e}", "#c25560")
@@ -199,10 +262,18 @@ class Others(commands.Cog):
         ):
             return
 
-        content = message.content
+        content = self.bot.extract_text(message)
         content_lower = content.lower()
 
-        embed_info = f" [Embed: {message.embeds[0].author.name or message.embeds[0].description}]" if message.embeds else ""
+        embed_info = ""
+        if message.embeds:
+            emb = message.embeds[0]
+            emb_author = emb.author.name if (emb.author and emb.author.name) else ""
+            emb_title = emb.title or ""
+            emb_desc = (emb.description[:60] + "...") if emb.description else ""
+            label = emb_title or emb_author or emb_desc
+            if label:
+                embed_info = f" [Embed: {label}]"
         await self.bot.log(f"OwO says: {content}{embed_info}", "#888888")
 
         if "**you must accept these rules to use the bot!**" in content_lower:
@@ -293,9 +364,7 @@ class Others(commands.Cog):
                         "id": "crate",
                     }
                     await self.bot.put_queue(crate_cmd, priority=True)
-                    inv_cog = self.bot.get_cog("Inventory")
-                    if inv_cog and hasattr(inv_cog, "trigger_check"):
-                        asyncio.create_task(inv_cog.trigger_check(delay=6.0))
+
 
             if auto_use.get("autoLootbox", False) and ("box" in content_lower or "`050`" in content):
                 if now >= self._lootbox_paused_until:

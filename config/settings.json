@@ -33,30 +33,31 @@
         "hunt": {
             "enabled": true,
             "cooldown": [
-                25,
-                35
+                70,
+                95
             ],
             "useShortForm": true
         },
         "battle": {
             "enabled": true,
             "cooldown": [
-                20,
-                28
+                16,
+                22
             ],
             "useShortForm": true,
             "showStreakInConsole": true,
             "notifyStreakLoss": true
         },
         "sell": {
-            "enabled": true,
+            "enabled": false,
             "cooldown": [
                 240,
                 330
             ],
             "rarity": [
                 "c",
-                "u"
+                "u",
+                "r"
             ]
         },
         "sac": {
@@ -235,8 +236,8 @@
     },
     "autoSell": {
         "enabled": true,
-        "triggerWhenCashBelow": 350,
-        "sellCommand": "c",
+        "triggerEveryNHunts": 10,
+        "sellCommand": ["c", "u", "r"],
         "maxTriggersPerHour": 15,
         "cooldownAfterSell": [
             30,
@@ -250,7 +251,7 @@
     },
     "autoEquip": {
         "enabled": true,
-        "interval_minutes": 20
+        "interval_minutes": 60
     },
     "defaultCooldowns": {
         "longCooldown": [
@@ -275,8 +276,8 @@
         ],
         "commandHandler": {
             "betweenCommands": [
-                15.0,
-                22.0
+                3.5,
+                5.5
             ],
             "beforeReaddingToQueue": 15
         },

@@ -15,9 +15,26 @@ import pytz
 from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 
+from collections import OrderedDict
+_MESSAGE_RAW_COMPONENTS = OrderedDict()
+
 try:
     import discord
     from discord.ext import commands, tasks
+
+    # Monkey-patch discord.Message._handle_components to preserve Discord Components V2 safely
+    _orig_handle_components = discord.Message._handle_components
+    def _patched_handle_components(self, data):
+        try:
+            _MESSAGE_RAW_COMPONENTS[id(self)] = data
+            if hasattr(self, 'id') and self.id:
+                _MESSAGE_RAW_COMPONENTS[self.id] = data
+            if len(_MESSAGE_RAW_COMPONENTS) > 400:
+                _MESSAGE_RAW_COMPONENTS.popitem(last=False)
+        except Exception:
+            pass
+        return _orig_handle_components(self, data)
+    discord.Message._handle_components = _patched_handle_components
 except ImportError:
     pass
 
@@ -110,6 +127,39 @@ class MyClient(commands.Bot):
         if message.guild and message.guild.me:
             return message.guild.me.display_name
         return self.user.name
+
+    def extract_text(self, message) -> str:
+        parts = []
+        if getattr(message, "content", None):
+            parts.append(message.content)
+        if getattr(message, "embeds", None):
+            for emb in message.embeds:
+                if emb.author and emb.author.name:
+                    parts.append(emb.author.name)
+                if emb.title:
+                    parts.append(emb.title)
+                if emb.description:
+                    parts.append(emb.description)
+                for f in emb.fields:
+                    parts.append(f"{f.name} {f.value}")
+                if emb.footer and emb.footer.text:
+                    parts.append(emb.footer.text)
+        raw_comps = _MESSAGE_RAW_COMPONENTS.get(id(message)) or _MESSAGE_RAW_COMPONENTS.get(getattr(message, "id", None))
+        if raw_comps:
+            def _walk(node):
+                res = []
+                if isinstance(node, list):
+                    for sub in node:
+                        res.extend(_walk(sub))
+                elif isinstance(node, dict):
+                    c = node.get("content")
+                    if c and isinstance(c, str):
+                        res.append(c)
+                    if "components" in node:
+                        res.extend(_walk(node["components"]))
+                return res
+            parts.extend(_walk(raw_comps))
+        return "\n".join(parts)
 
     async def set_stat(self, value, debug_note=None):
         if value:
@@ -395,6 +445,7 @@ class MyClient(commands.Bot):
             "giveaway": self.settings_dict.get("giveawayJoiner", {}).get("enabled", False),
             "hunt": commands_dict["hunt"]["enabled"] and not reaction_bot_dict["hunt_and_battle"] and not huntbot_active,
             "huntbot": huntbot_active,
+            "inventory": self.settings_dict.get("autoEquip", {}).get("enabled", False),
             "level": commands_dict["lvlGrind"]["enabled"],
             "lottery": commands_dict["lottery"]["enabled"],
             "others": True,
@@ -869,14 +920,6 @@ class MyClient(commands.Bot):
                 self.user_status["net_earnings"] += amount
 
         await self.update_cash_db()
-
-        if self.settings_dict.get("autoSell", {}).get("enabled", False):
-            try:
-                autosell_cog = self.get_cog("AutoSell")
-                if autosell_cog:
-                    await autosell_cog.check_balance_and_auto_sell()
-            except Exception as e:
-                await self.log(f"Error checking auto-sell: {e}", "#c25560")
 
     async def setup_captcha_solver(self):
         hcaptcha_cfg = self.global_settings_dict.get("captcha", {}).get("hcaptchaSolver", {})
