@@ -847,7 +847,7 @@ class MyClient(commands.Bot):
             {
                 "cmd_name": self.alias["cash"]["normal"],
                 "prefix": True,
-                "checks": True,
+                "checks": False,
                 "id": "cash",
                 "removed": False
             }
