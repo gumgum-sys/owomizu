@@ -170,7 +170,7 @@ class Others(commands.Cog):
                 pos = idx + 1
                 add_cmd = {
                     "cmd_name": "team",
-                    "cmd_arguments": f"add {pos} {beast['name']}",
+                    "cmd_arguments": f"add {beast['name']} {pos}",
                     "prefix": True,
                     "checks": False,
                     "retry_count": 0,
@@ -203,7 +203,7 @@ class Others(commands.Cog):
         content_lower = content.lower()
 
         embed_info = f" [Embed: {message.embeds[0].author.name or message.embeds[0].description}]" if message.embeds else ""
-        await self.bot.log(f"OwO says: {content[:80]}{embed_info}", "#888888")
+        await self.bot.log(f"OwO says: {content}{embed_info}", "#888888")
 
         if "**you must accept these rules to use the bot!**" in content_lower:
             await asyncio.sleep(self.bot.random.uniform(0.6, 1.7))
