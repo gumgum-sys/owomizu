@@ -82,11 +82,21 @@ class Others(commands.Cog):
                     pass
             return
 
-        if (
-            nick not in content
-            and self.bot.user.display_name not in content
-            and f"<@{self.bot.user.id}>" not in content
-        ):
+        names_to_check = {
+            self.bot.user.name.lower(),
+            str(self.bot.user.id),
+            nick.lower() if nick else "",
+            (getattr(self.bot.user, 'global_name', None) or "").lower(),
+            (getattr(self.bot.user, 'display_name', None) or "").lower()
+        }
+        names_to_check.discard("")
+
+        matches_me = (
+            any(name in content_lower for name in names_to_check)
+            or f"<@{self.bot.user.id}>" in content
+        )
+
+        if not matches_me:
             return
 
         auto_use = self.bot.settings_dict.get("autoUse", {})
