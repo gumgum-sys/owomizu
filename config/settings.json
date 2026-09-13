@@ -235,7 +235,7 @@
             "beforeReaddingToQueue": 15
         },
         "reactionBot": {
-            "hunt_and_battle": true,
+            "hunt_and_battle": false,
             "owo": false,
             "pray_and_curse": false,
             "cooldown": [
