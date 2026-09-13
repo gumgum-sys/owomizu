@@ -39,10 +39,10 @@
             "useShortForm": true
         },
         "battle": {
-            "enabled": false,
+            "enabled": true,
             "cooldown": [
-                15,
-                16
+                20,
+                28
             ],
             "useShortForm": true
         },
@@ -205,7 +205,7 @@
         ]
     },
     "autoDaily": true,
-    "cashCheck": false,
+    "cashCheck": true,
     "autoUse": {
         "autoLootbox": true,
         "autoCrate": true,

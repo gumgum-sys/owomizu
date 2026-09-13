@@ -135,6 +135,13 @@ class Others(commands.Cog):
                 self._lootbox_paused_until = now + secs + 10
                 await self.bot.log(f"Lootbox resets in {secs}s. Auto-pause set.", "#aaaaaa")
 
+        elif "you currently have" in content_lower and "cowoncy" in content_lower:
+            m = re.search(r'have\s+[\*]*([0-9,]+)[\*]*\s+cowoncy', content, re.IGNORECASE)
+            if m:
+                cash_val = int(m.group(1).replace(',', ''))
+                await self.bot.update_cash(cash_val, override=True)
+                await self.bot.log(f"Synced Cowoncy Balance: {cash_val:,}", "#51cf66")
+
         elif (
             "team add {animal}" in content.lower()
             or "team add" in content.lower()

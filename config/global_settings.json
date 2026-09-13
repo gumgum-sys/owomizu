@@ -9,7 +9,7 @@
         "port": 1200,
         "refreshInterval": 15,
         "password": "",
-        "enableHost": false
+        "enableHost": true
     },
     "account": {
         "startupDelay": [

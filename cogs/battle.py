@@ -58,7 +58,15 @@ class Battle(commands.Cog):
                 return
             if message.author.id != self.bot.owo_bot_id:
                 return
+
+            nick = self.bot.get_nick(message)
+
             if not message.embeds:
+                content_lower = message.content.lower()
+                if "you do not have an active battle team" in content_lower or "team add" in content_lower:
+                    # Allow others.py time to add team from owo zoo, then resume battle
+                    await asyncio.sleep(12)
+                    asyncio.create_task(self._dispatch())
                 return
 
             cfg = self._cfg()
@@ -75,17 +83,7 @@ class Battle(commands.Cog):
                 if "goes into battle!" not in name_lower:
                     continue
 
-                if message.reference:
-                    try:
-                        ref = await message.channel.fetch_message(message.reference.message_id)
-                        if not ref.embeds and "You found a **weapon crate**!" in ref.content:
-                            pass
-                        else:
-                            return
-                    except Exception:
-                        pass
-
-                if self.bot.user.name not in author_name:
+                if self.bot.user.name.lower() not in name_lower and nick.lower() not in name_lower:
                     continue
 
                 if embed.footer and embed.footer.text:

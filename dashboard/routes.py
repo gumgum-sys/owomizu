@@ -219,11 +219,19 @@ def get_dashboard_status():
         else:
             bot_status = "offline"
 
-        try:
-           with open("tokens.txt", "r") as f:
-               total_accounts = len(f.readlines())
-        except:
-            total_accounts = 0
+        total_accounts = 0
+        tokens_env = os.getenv("TOKENS")
+        if tokens_env:
+            raw_tokens = [entry.strip().split() for entry in tokens_env.split(';') if entry.strip()]
+            total_accounts = len(raw_tokens)
+        elif os.path.exists("tokens.txt"):
+            try:
+                with open("tokens.txt", "r") as f:
+                    total_accounts = len([line.strip() for line in f if line.strip()])
+            except:
+                total_accounts = 0
+        if total_accounts == 0 and active_accounts > 0:
+            total_accounts = active_accounts
 
         return jsonify({
             "status": bot_status,
@@ -265,9 +273,12 @@ async def get_dashboard_stats():
             active_clients = {}
             for client in state.bot_instances:
                 try:
-                    cid = str(client.user.id)
-                    s = client.command_handler_status
-                    active_clients[cid] = s
+                    s = getattr(client, 'command_handler_status', {})
+                    if hasattr(client, 'user') and client.user:
+                        cid = str(client.user.id)
+                        active_clients[cid] = s
+                    else:
+                        active_clients["default"] = s
                 except Exception:
                     pass
 
@@ -281,12 +292,13 @@ async def get_dashboard_stats():
                 cowoncy = row["cowoncy"] or 0
                 captchas = row["captchas"] or 0
 
-                total_cowoncy += cowoncy
-                total_captchas += captchas
-
                 uid = str(user_id)
                 user_display = f"User-{uid[-4:]}"
-                cs = active_clients.get(uid)
+                cs = active_clients.get(uid) or active_clients.get("default")
+
+                # If only 1 bot instance is running, match it
+                if cs is None and len(state.bot_instances) == 1:
+                    cs = getattr(state.bot_instances[0], 'command_handler_status', {})
 
                 if cs is None:
                     live_status = "offline"
@@ -299,6 +311,17 @@ async def get_dashboard_stats():
                 else:
                     live_status = "online"
 
+                # Check in-memory balance if DB balance is 0
+                if cowoncy == 0:
+                    for client in state.bot_instances:
+                        b = client.user_status.get("balance", 0) if hasattr(client, "user_status") else 0
+                        if b > 0:
+                            cowoncy = b
+                            break
+
+                total_cowoncy += cowoncy
+                total_captchas += captchas
+
                 stats_data["accounts"].append({
                     "user_id": user_id,
                     "user_display": user_display,
@@ -309,6 +332,12 @@ async def get_dashboard_stats():
                     "is_active": cs is not None,
                     "live_status": live_status,
                 })
+
+            if total_cowoncy == 0:
+                for client in state.bot_instances:
+                    b = client.user_status.get("balance", 0) if hasattr(client, "user_status") else 0
+                    if b > 0:
+                        total_cowoncy += b
 
             stats_data["balance"] = total_cowoncy
             stats_data["balance_formatted"] = f"{total_cowoncy:,}"
