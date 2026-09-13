@@ -136,7 +136,8 @@ class Others(commands.Cog):
                 await self.bot.log(f"Lootbox resets in {secs}s. Auto-pause set.", "#aaaaaa")
 
         elif (
-            "Create a team with the command `owo team add {animal}`" in content
+            "team add {animal}" in content.lower()
+            or "team add" in content.lower()
         ):
             await self.bot.set_stat(False)
             self.zoo = True

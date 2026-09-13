@@ -206,6 +206,23 @@
     },
     "autoDaily": true,
     "cashCheck": false,
+    "autoUse": {
+        "autoLootbox": true,
+        "autoCrate": true,
+        "gems": {
+            "enabled": false
+        }
+    },
+    "autoSell": {
+        "enabled": true,
+        "triggerWhenCashBelow": 200,
+        "sellCommand": "c",
+        "maxTriggersPerHour": 15,
+        "cooldownAfterSell": [
+            30,
+            60
+        ]
+    },
     "defaultCooldowns": {
         "longCooldown": [
             400,
