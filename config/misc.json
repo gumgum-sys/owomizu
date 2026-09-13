@@ -42,6 +42,11 @@
             "basecd": 45,
             "log_color": "#4db6c4"
         },
+        "team": {
+            "priority": 1,
+            "basecd": 2,
+            "log_color": "#4db6c4"
+        },
         "owo": {
             "priority": 3,
             "basecd": 10,
@@ -340,6 +345,12 @@
             "normal": "piku",
             "alias": [
                 "piku"
+            ]
+        },
+        "team": {
+            "normal": "team",
+            "alias": [
+                "team"
             ]
         }
     }
