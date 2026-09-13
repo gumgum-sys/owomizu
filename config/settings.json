@@ -44,18 +44,19 @@
                 20,
                 28
             ],
-            "useShortForm": true
+            "useShortForm": true,
+            "showStreakInConsole": true,
+            "notifyStreakLoss": true
         },
         "sell": {
-            "enabled": false,
+            "enabled": true,
             "cooldown": [
-                410,
-                500
+                240,
+                330
             ],
             "rarity": [
                 "c",
-                "u",
-                "r"
+                "u"
             ]
         },
         "sac": {
@@ -71,10 +72,10 @@
             ]
         },
         "pray": {
-            "enabled": false,
+            "enabled": true,
             "cooldown": [
-                310,
-                400
+                305,
+                360
             ],
             "userid": [],
             "pingUser": false

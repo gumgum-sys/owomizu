@@ -280,6 +280,37 @@ class Others(commands.Cog):
                 self._lootbox_paused_until = now + secs + 10
                 await self.bot.log(f"Lootbox resets in {secs}s. Auto-pause set.", "#aaaaaa")
 
+        elif "inventory ======" in content_lower:
+            if auto_use.get("autoCrate", False) and ("crate" in content_lower or "`100`" in content):
+                if now >= self._crate_paused_until:
+                    await self.bot.log("Found Crates in Inventory! Opening all...", "#E7DA90")
+                    await asyncio.sleep(self.bot.random.uniform(2.0, 3.5))
+                    crate_cmd = {
+                        "cmd_name": "crate",
+                        "cmd_arguments": "all",
+                        "prefix": True,
+                        "checks": False,
+                        "id": "crate",
+                    }
+                    await self.bot.put_queue(crate_cmd, priority=True)
+                    inv_cog = self.bot.get_cog("Inventory")
+                    if inv_cog and hasattr(inv_cog, "trigger_check"):
+                        asyncio.create_task(inv_cog.trigger_check(delay=6.0))
+
+            if auto_use.get("autoLootbox", False) and ("box" in content_lower or "`050`" in content):
+                if now >= self._lootbox_paused_until:
+                    await self.bot.log("Found Lootbox in Inventory! Opening all...", "#E7DA90")
+                    await asyncio.sleep(self.bot.random.uniform(2.0, 3.5))
+                    lootbox_cmd = {
+                        "cmd_name": "lootbox",
+                        "cmd_arguments": "all",
+                        "prefix": True,
+                        "checks": False,
+                        "id": "lootbox",
+                    }
+                    await self.bot.put_queue(lootbox_cmd, priority=True)
+                    self.bot.user_status["no_gems"] = False
+
         elif "you currently have" in content_lower and "cowoncy" in content_lower:
             m = re.search(r'have\s+[\*_]*([0-9,]+)[\*_]*\s+cowoncy', content, re.IGNORECASE)
             if m:

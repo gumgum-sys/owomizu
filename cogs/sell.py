@@ -33,7 +33,14 @@ class Sell(commands.Cog):
         }
 
     def fetch_arguments(self, cmd):
-        return " ".join(self.bot.settings_dict["commands"][cmd]["rarity"])
+        rarities = self.bot.settings_dict["commands"][cmd].get("rarity", ["c"])
+        if not rarities:
+            return "c"
+        if not hasattr(self, "_rarity_idx"):
+            self._rarity_idx = 0
+        arg = rarities[self._rarity_idx % len(rarities)]
+        self._rarity_idx += 1
+        return arg
 
     async def sell_sac_queue(self, cmd, cooldown):
         await self.bot.sleep_till(cooldown)
@@ -58,7 +65,8 @@ class Sell(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message):
         if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
-            if 'for a total of **<:cowoncy:416043450337853441>' in message.content.lower():
+            content_lower = message.content.lower()
+            if 'for a total of **<:cowoncy:416043450337853441>' in content_lower:
                 await self.bot.remove_queue(id="sell")
 
                 if self.bot.settings_dict["cashCheck"]:
@@ -72,12 +80,17 @@ class Sell(commands.Cog):
                 else:
                     await self.sell_sac_queue(self.sell_cmd, self.bot.settings_dict["commands"]["sell"]["cooldown"])
 
-            elif "sacrificed" in message.content and "for a total of" in message.content.lower():
+            elif "sacrificed" in message.content and "for a total of" in content_lower:
                 await self.bot.remove_queue(id="sell")
                 if self.bot.settings_dict["commands"]["sell"]["enabled"]:
                     await self.sell_sac_queue(self.sell_cmd, self.bot.settings_dict["commands"]["sell"]["cooldown"])
                 else:
                     await self.sell_sac_queue(self.sac_cmd, self.bot.settings_dict["commands"]["sac"]["cooldown"])
+
+            elif "couldn't find any animals" in content_lower or "no animals found" in content_lower or "could not find" in content_lower:
+                await self.bot.remove_queue(id="sell")
+                if self.bot.settings_dict["commands"]["sell"]["enabled"]:
+                    await self.sell_sac_queue(self.sell_cmd, self.bot.settings_dict["commands"]["sell"]["cooldown"])
 
 async def setup(bot):
     await bot.add_cog(Sell(bot))
