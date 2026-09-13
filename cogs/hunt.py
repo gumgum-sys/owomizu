@@ -112,6 +112,10 @@ class Hunt(commands.Cog):
                 prefix = self.bot.settings_dict.get("setprefix", "owo ")
                 silent = self.bot.global_settings_dict.get("silentTextMessages", False)
                 await self.bot.cm.send(f"{prefix}{cmd_name}", silent=silent)
+                await self.bot.log(f"Ran: {prefix}{cmd_name}")
+                await self.bot.update_database(
+                    "UPDATE commands SET count = count + 1 WHERE name = 'hunt'"
+                )
 
                 cd = self._get_cooldown()
                 sleep_time = (
@@ -119,7 +123,7 @@ class Hunt(commands.Cog):
                     if isinstance(cd, list)
                     else float(cd)
                 )
-                # Jeda wajib 18-25 detik ala manusia, ga bisa di-skip oleh glitch state
+                # Jeda wajib 25-35 detik ala manusia, ga bisa di-skip oleh glitch state
                 await asyncio.sleep(sleep_time)
 
             except asyncio.CancelledError:
@@ -173,9 +177,6 @@ class Hunt(commands.Cog):
             if "you found:" in message.content.lower() or "caught" in message.content.lower():
                 lines = message.content.splitlines()
                 target_line = lines[0] if "caught" in message.content.lower() else lines[1]
-                sell_value = _get_sell_value(target_line)
-                await self.bot.update_cash(sell_value - 5, assumed=True)
-                await self.bot.update_cash(5, reduce=True)
                 await self._maybe_send_animal_webhook(target_line)
         except Exception as e:
             await self.bot.log(f"Error - {e}, in hunt on_message", "#c25560")
