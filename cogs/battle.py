@@ -47,6 +47,8 @@ class Battle(commands.Cog):
         cd = self._cfg().get("cooldown", [15, 16])
         sleep_time = self.bot.random_float(cd)
         await asyncio.sleep(sleep_time)
+        while self.bot.user_status.get("team_updating", False):
+            await asyncio.sleep(1.5)
         self._cmd["cmd_name"] = self._cmd_name()
         self._send_ts = time.monotonic()
         await self.bot.put_queue(self._cmd)
@@ -64,7 +66,9 @@ class Battle(commands.Cog):
             if not message.embeds:
                 content_lower = message.content.lower()
                 if "you do not have an active battle team" in content_lower or "team add" in content_lower:
-                    # Allow others.py time to add team from owo zoo, then resume battle
+                    others = self.bot.get_cog("Others")
+                    if others and hasattr(others, "request_team_refresh"):
+                        asyncio.create_task(others.request_team_refresh(force=True))
                     await asyncio.sleep(12)
                     asyncio.create_task(self._dispatch())
                 return

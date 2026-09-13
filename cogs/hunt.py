@@ -178,6 +178,12 @@ class Hunt(commands.Cog):
                 lines = message.content.splitlines()
                 target_line = lines[0] if "caught" in message.content.lower() else lines[1]
                 await self._maybe_send_animal_webhook(target_line)
+
+                catches, highest = _parse_catches(target_line)
+                if highest.get("rank", 0) >= 3:
+                    others_cog = self.bot.get_cog("Others")
+                    if others_cog and hasattr(others_cog, "on_rare_catch"):
+                        asyncio.create_task(others_cog.on_rare_catch(highest))
         except Exception as e:
             await self.bot.log(f"Error - {e}, in hunt on_message", "#c25560")
 

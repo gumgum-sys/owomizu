@@ -47,6 +47,36 @@
             "basecd": 2,
             "log_color": "#4db6c4"
         },
+        "team_1": {
+            "priority": 1,
+            "basecd": 2,
+            "log_color": "#4db6c4"
+        },
+        "team_2": {
+            "priority": 1,
+            "basecd": 2,
+            "log_color": "#4db6c4"
+        },
+        "team_3": {
+            "priority": 1,
+            "basecd": 2,
+            "log_color": "#4db6c4"
+        },
+        "team_clear": {
+            "priority": 1,
+            "basecd": 2,
+            "log_color": "#4db6c4"
+        },
+        "weapon": {
+            "priority": 3,
+            "basecd": 10,
+            "log_color": "#4db6c4"
+        },
+        "equip": {
+            "priority": 2,
+            "basecd": 3,
+            "log_color": "#ffd43b"
+        },
         "owo": {
             "priority": 3,
             "basecd": 10,
@@ -351,6 +381,19 @@
             "normal": "team",
             "alias": [
                 "team"
+            ]
+        },
+        "weapon": {
+            "normal": "weapon",
+            "alias": [
+                "weapon",
+                "weapons"
+            ]
+        },
+        "equip": {
+            "normal": "equip",
+            "alias": [
+                "equip"
             ]
         }
     }

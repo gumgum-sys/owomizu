@@ -242,6 +242,15 @@
             60
         ]
     },
+    "autoTeam": {
+        "enabled": true,
+        "rotateOnRareCatch": true,
+        "checkIntervalMinutes": 30
+    },
+    "autoEquip": {
+        "enabled": true,
+        "interval_minutes": 20
+    },
     "defaultCooldowns": {
         "longCooldown": [
             400,
