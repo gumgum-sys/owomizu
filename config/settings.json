@@ -210,12 +210,19 @@
         "autoLootbox": true,
         "autoCrate": true,
         "gems": {
-            "enabled": false
+            "enabled": true,
+            "disable_hunts_if_no_gems": false,
+            "gemsToUse": {
+                "huntGem": true,
+                "empoweredGem": true,
+                "luckyGem": true,
+                "specialGem": true
+            }
         }
     },
     "autoSell": {
         "enabled": true,
-        "triggerWhenCashBelow": 200,
+        "triggerWhenCashBelow": 350,
         "sellCommand": "c",
         "maxTriggersPerHour": 15,
         "cooldownAfterSell": [
