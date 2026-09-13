@@ -217,6 +217,18 @@
                 "empoweredGem": true,
                 "luckyGem": true,
                 "specialGem": true
+            },
+            "order": {
+                "lowestToHighest": true
+            },
+            "tiers": {
+                "common": true,
+                "uncommon": true,
+                "rare": true,
+                "epic": true,
+                "mythical": true,
+                "legendary": true,
+                "fabled": true
             }
         }
     },

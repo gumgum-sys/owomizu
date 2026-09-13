@@ -168,12 +168,12 @@ class Gems(commands.Cog):
         tier_order = ["fabled", "legendary", "mythical", "epic", "rare", "uncommon", "common"]
         cnf = self.bot.settings_dict["autoUse"]["gems"]
 
-        if cnf["order"]["lowestToHighest"]:
+        if cnf.get("order", {}).get("lowestToHighest", True):
             tier_order.reverse()
 
         grouped_gem_list = []
         for tier in tier_order:
-            if not cnf["tiers"][tier]:
+            if not cnf.get("tiers", {}).get(tier, True):
                 continue
             current_group = []
             for gem_id in gem_tiers[tier]:
