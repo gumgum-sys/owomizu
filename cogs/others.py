@@ -129,6 +129,8 @@ class Others(commands.Cog):
 
     async def request_team_refresh(self, force=False):
         now = _time.time()
+        if self.bot.cmds_state.get("zoo", {}).get("in_queue", False):
+            return
         if not force and (now - self._last_zoo_audit < 180 or self._team_updating):
             return
         self._last_zoo_audit = now
@@ -158,28 +160,17 @@ class Others(commands.Cog):
         self.bot.user_status["team_updating"] = True
         try:
             names = [a["name"] for a in animals]
-            desc = ", ".join(f"{a['name']} ({a['rank'].upper()})" for a in animals)
-            await self.bot.log(f"⚔️ Rotating Battle Team to top-tier beasts: {desc}", "#ffd43b")
+            desc = ", ".join(f"{idx+1}:{a['name']} ({a['rank'].upper()})" for idx, a in enumerate(animals))
+            await self.bot.log(f"⚔️ Rotating Battle Team positions: {desc}", "#ffd43b")
             self.bot.add_dashboard_log("battle", f"Rotating team: {desc}", "info")
 
-            # 1. Clear existing team slots
-            clear_cmd = {
-                "cmd_name": "team",
-                "cmd_arguments": "clear",
-                "prefix": True,
-                "checks": False,
-                "retry_count": 0,
-                "id": "team_clear",
-            }
-            await self.bot.put_queue(clear_cmd, priority=True)
-            await asyncio.sleep(self.bot.random.uniform(1.2, 2.0))
-
-            # 2. Add up to 3 beasts using discrete command IDs to prevent queue collision
+            # Directly set positions 1, 2, 3 using discrete command IDs
             slot_ids = ["team_1", "team_2", "team_3"]
             for idx, beast in enumerate(animals[:3]):
+                pos = idx + 1
                 add_cmd = {
                     "cmd_name": "team",
-                    "cmd_arguments": f"add {beast['name']}",
+                    "cmd_arguments": f"add {pos} {beast['name']}",
                     "prefix": True,
                     "checks": False,
                     "retry_count": 0,
