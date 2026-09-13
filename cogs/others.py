@@ -73,6 +73,9 @@ class Others(commands.Cog):
         content = message.content
         content_lower = content.lower()
 
+        embed_info = f" [Embed: {message.embeds[0].author.name or message.embeds[0].description}]" if message.embeds else ""
+        await self.bot.log(f"OwO says: {content[:80]}{embed_info}", "#888888")
+
         if "**you must accept these rules to use the bot!**" in content_lower:
             await asyncio.sleep(self.bot.random.uniform(0.6, 1.7))
             if message.components and message.components[0].children[0]:
@@ -146,7 +149,7 @@ class Others(commands.Cog):
                 await self.bot.log(f"Lootbox resets in {secs}s. Auto-pause set.", "#aaaaaa")
 
         elif "you currently have" in content_lower and "cowoncy" in content_lower:
-            m = re.search(r'have\s+[\*]*([0-9,]+)[\*]*\s+cowoncy', content, re.IGNORECASE)
+            m = re.search(r'have\s+[\*_]*([0-9,]+)[\*_]*\s+cowoncy', content, re.IGNORECASE)
             if m:
                 cash_val = int(m.group(1).replace(',', ''))
                 await self.bot.update_cash(cash_val, override=True)
