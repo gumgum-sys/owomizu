@@ -146,7 +146,6 @@ class Others(commands.Cog):
             "team add {animal}" in content.lower()
             or "team add" in content.lower()
         ):
-            await self.bot.set_stat(False)
             self.zoo = True
             team_cmd = {
                 "cmd_name": self.bot.alias["zoo"]["normal"],
@@ -158,7 +157,7 @@ class Others(commands.Cog):
             await self.bot.sleep_till([2, 4])
             await self.bot.put_queue(team_cmd, priority=True)
 
-        elif "s zoo! **" in content and self.zoo:
+        elif "zoo!" in content.lower() and self.zoo:
             animals = get_emoji_names(content)
             animals.reverse()
             await asyncio.sleep(self.bot.random.uniform(1.5, 2.3))
@@ -174,7 +173,6 @@ class Others(commands.Cog):
                 await self.bot.put_queue(zoo_cmd, priority=True)
                 await asyncio.sleep(self.bot.random.uniform(1.5, 2.3))
             self.zoo = False
-            await self.bot.set_stat(True)
 
 
 async def setup(bot):
