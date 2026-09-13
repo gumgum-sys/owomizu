@@ -85,11 +85,7 @@ class Hunt(commands.Cog):
         return cd
 
     def _get_cmd_name(self):
-        return (
-            self.bot.alias["hunt"]["shortform"]
-            if self.bot.settings_dict["commands"]["hunt"]["useShortForm"]
-            else self.bot.alias["hunt"]["alias"]
-        )
+        return "hunt"
 
     async def _hunt_loop(self):
         await self.bot.wait_until_ready()

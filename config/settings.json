@@ -39,7 +39,7 @@
             "useShortForm": true
         },
         "battle": {
-            "enabled": true,
+            "enabled": false,
             "cooldown": [
                 15,
                 16

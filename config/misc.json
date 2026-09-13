@@ -191,7 +191,7 @@
     "alias": {
         "hunt": {
             "normal": "hunt",
-            "shortform": "h",
+            "shortform": "hunt",
             "alias": [
                 "hunt",
                 "catch",
