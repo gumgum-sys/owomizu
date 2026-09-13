@@ -13,6 +13,13 @@ import sys
 import threading
 import time
 import traceback
+
+if sys.platform == "win32":
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 from importlib.metadata import version as import_ver
 from copy import deepcopy
 from datetime import datetime, timedelta, timezone

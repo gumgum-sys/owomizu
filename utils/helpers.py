@@ -8,7 +8,13 @@ from rich.console import Console
 from rich.panel import Panel
 from utils import state
 
-console = Console()
+if sys.platform == "win32":
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
+console = Console(legacy_windows=False)
 lock = threading.Lock()
 
 def is_termux():
