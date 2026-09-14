@@ -18,6 +18,7 @@ TIER_SCORES = {
     "poison dagger": 800,
 
     # Epic Tier (base 600)
+    "staff of corruption": 600,
     "culling scythe": 600,
     "energy blade": 600,
     "greatsword": 600,
@@ -38,6 +39,26 @@ TIER_SCORES = {
     # Common Tier (base 100)
     "stick": 100,
 }
+
+MAGIC_PETS = {"gdeer", "gcamel", "owl", "bat", "raven", "swan", "peacock"}
+MAGIC_WEAPONS = {"staff", "wand", "orb", "tome", "grimoire", "rod"}
+BRUISER_PETS = {"glion", "bear", "rhino", "elephant", "boar", "wolf"}
+BRUISER_WEAPONS = {"axe", "greatsword", "hammer", "shield", "glaive"}
+ASSASSIN_PETS = {"gfox", "tiger", "cheetah", "panther", "snake"}
+ASSASSIN_WEAPONS = {"scythe", "dagger", "blade", "sword", "bow"}
+
+def is_magic_weapon(w_name: str) -> bool:
+    nl = w_name.lower()
+    return any(k in nl for k in MAGIC_WEAPONS)
+
+def is_magic_pet(p_name: str) -> bool:
+    return p_name.lower() in MAGIC_PETS
+
+def is_bruiser_pet(p_name: str) -> bool:
+    return p_name.lower() in BRUISER_PETS
+
+def is_assassin_pet(p_name: str) -> bool:
+    return p_name.lower() in ASSASSIN_PETS
 
 # Regex for modern OwO weapon list:
 # Example: `FMX1NN` <:mythic:416520808501084162><:mgaxe:618389128949661716><:edischarge:572285187044671489> **Glacial Axe** 81% ➤  :dragon: dragon
@@ -129,7 +150,7 @@ class Inventory(commands.Cog):
         # Fast-track startup weapon equipping for active squad
         known_god_weapons = [
             ("glion", "FMX1NN", "Glacial Axe (Mythic 81%)"),
-            ("gdeer", "FN2XJJ", "Poison Dagger (Epic 67.8%)"),
+            ("gdeer", "FN2XJG", "Staff of Corruption (Epic 67.2%)"),
             ("gfox", "FN269J", "Culling Scythe (Epic 67.6%)")
         ]
         for i, (pet, wid, label) in enumerate(known_god_weapons):
@@ -293,13 +314,75 @@ class Inventory(commands.Cog):
             await self.bot.log(f"🗡️ Weapons scanned: {summary}", "#4db6c4")
             self.bot.add_dashboard_log("inventory", f"Weapons scanned: {len(parsed_weapons)} found", "info")
 
-            # Multi-Equip for all 3 pets in active team
+            # Multi-Equip for active squad with role-based synergy
             active_team = self._get_active_team()
-            num_to_arm = min(len(active_team), len(parsed_weapons))
 
-            for idx in range(num_to_arm):
-                pet = active_team[idx]
-                target_weapon = parsed_weapons[idx]
+            pet_assignments = {}
+            remaining_weapons = list(parsed_weapons)
+
+            # 1. Magic pets (gdeer, etc.) -> Best Magic weapon (Staff, Wand, Orb)
+            for pet in active_team:
+                if is_magic_pet(pet):
+                    best_mw = None
+                    for w in remaining_weapons:
+                        if is_magic_weapon(w["name"]):
+                            best_mw = w
+                            break
+                    if best_mw:
+                        pet_assignments[pet] = best_mw
+                        remaining_weapons.remove(best_mw)
+
+            # 2. Bruiser pets (glion, etc.) -> Heavy Cleave/Tank weapon (Axe, Greatsword, etc.)
+            for pet in active_team:
+                if pet not in pet_assignments and is_bruiser_pet(pet):
+                    best_bw = None
+                    for w in remaining_weapons:
+                        nl = w["name"].lower()
+                        if any(kw in nl for kw in BRUISER_WEAPONS):
+                            best_bw = w
+                            break
+                    if not best_bw and remaining_weapons:
+                        for w in remaining_weapons:
+                            if not is_magic_weapon(w["name"]):
+                                best_bw = w
+                                break
+                    if best_bw:
+                        pet_assignments[pet] = best_bw
+                        remaining_weapons.remove(best_bw)
+
+            # 3. Assassin pets (gfox, etc.) -> Scythe / Dagger / Burst weapon
+            for pet in active_team:
+                if pet not in pet_assignments and is_assassin_pet(pet):
+                    best_aw = None
+                    for w in remaining_weapons:
+                        if "scythe" in w["name"].lower():
+                            best_aw = w
+                            break
+                    if not best_aw:
+                        for w in remaining_weapons:
+                            nl = w["name"].lower()
+                            if any(kw in nl for kw in ASSASSIN_WEAPONS):
+                                best_aw = w
+                                break
+                    if not best_aw and remaining_weapons:
+                        for w in remaining_weapons:
+                            if not is_magic_weapon(w["name"]):
+                                best_aw = w
+                                break
+                    if best_aw:
+                        pet_assignments[pet] = best_aw
+                        remaining_weapons.remove(best_aw)
+
+            # 4. Fallback for any unassigned pet
+            for pet in active_team:
+                if pet not in pet_assignments and remaining_weapons:
+                    pet_assignments[pet] = remaining_weapons.pop(0)
+
+            # Equip assigned weapons
+            for idx, pet in enumerate(active_team):
+                target_weapon = pet_assignments.get(pet)
+                if not target_weapon:
+                    continue
 
                 # Check if already wielded by this pet
                 is_equipped = False
