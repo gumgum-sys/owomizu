@@ -10,11 +10,10 @@ TIER_SCORES = {
     "abyssal glaive": 1000,
     "scythe of the reaper": 1000,
 
+    # Fabled Tier (base 900)
+    "fabled": 900,
+
     # Legendary Tier (base 800)
-    "fine foul fish": 800,
-    "foul fish": 800,
-    "vampiric staff": 800,
-    "bow": 800,
     "flame wand": 800,
     "poison dagger": 800,
 
@@ -24,6 +23,10 @@ TIER_SCORES = {
     "greatsword": 600,
 
     # Rare Tier (base 400)
+    "fine foul fish": 400,
+    "foul fish": 400,
+    "vampiric staff": 400,
+    "bow": 400,
     "staff": 400,
     "axe": 400,
     "mace": 400,
@@ -110,7 +113,7 @@ class Inventory(commands.Cog):
         others = self.bot.get_cog("Others")
         if others and hasattr(others, "current_team") and others.current_team:
             return list(others.current_team)
-        return ["gdeer", "dragon", "tiger"]
+        return ["gdeer", "gfox", "dragon"]
 
     async def inventory_loop(self):
         await self.bot.wait_until_ready()
@@ -119,8 +122,8 @@ class Inventory(commands.Cog):
         # Fast-track startup weapon equipping for known top weapons
         known_god_weapons = [
             ("gdeer", "FMX1NN", "Glacial Axe (Mythic 81%)"),
-            ("dragon", "FMX1NK", "Fine Foul Fish (Legendary 57.7%)"),
-            ("tiger", "FMX1NM", "Bow (Rare 42%)")
+            ("dragon", "FN269J", "Culling Scythe (Epic 67.6%)"),
+            ("gfox", "FMX1NJ", "Culling Scythe [0] (Epic 62%)")
         ]
         for i, (pet, wid, label) in enumerate(known_god_weapons):
             if self.equipped_weapons.get(pet) != wid:
@@ -163,27 +166,33 @@ class Inventory(commands.Cog):
         clean_name = name.strip().lower()
 
         base_tier = 0
-        for known_name, score in TIER_SCORES.items():
-            if known_name in clean_name:
-                base_tier = score
-                break
-
-        if base_tier == 0 and raw_line:
+        # Priority 1: Check actual Discord emoji tag from OwO (ground truth tier)
+        if raw_line:
             raw_lower = raw_line.lower()
-            if any(tag in raw_lower for tag in ["<:m_", "<:mythic", "tier_m"]):
+            if any(tag in raw_lower for tag in ["<:mythic", "<a:mythic", "tier_m", "<:m_"]):
                 base_tier = 1000
-            elif any(tag in raw_lower for tag in ["<:l_", "<:legendary", "tier_l"]):
+            elif any(tag in raw_lower for tag in ["<:fabled", "<a:fabled", "tier_f", "<:f_"]):
+                base_tier = 900
+            elif any(tag in raw_lower for tag in ["<:legendary", "<a:legendary", "tier_l", "<:l_"]):
                 base_tier = 800
-            elif any(tag in raw_lower for tag in ["<:e_", "<:epic", "tier_e"]):
+            elif any(tag in raw_lower for tag in ["<:epic", "<a:epic", "tier_e", "<:e_"]):
                 base_tier = 600
-            elif any(tag in raw_lower for tag in ["<:r_", "<:rare", "tier_r"]):
+            elif any(tag in raw_lower for tag in ["<:rare", "<a:rare", "tier_r", "<:r_"]):
                 base_tier = 400
-            elif any(tag in raw_lower for tag in ["<:u_", "<:uncommon", "tier_u"]):
+            elif any(tag in raw_lower for tag in ["<:uncommon", "<a:uncommon", "tier_u", "<:u_"]):
                 base_tier = 200
-            elif any(tag in raw_lower for tag in ["<:c_", "<:common", "tier_c"]):
+            elif any(tag in raw_lower for tag in ["<:common", "<a:common", "tier_c", "<:c_"]):
                 base_tier = 100
-            else:
-                base_tier = 50
+
+        # Priority 2: Fallback to known weapon name mapping if no emoji was matched
+        if base_tier == 0:
+            for known_name, score in TIER_SCORES.items():
+                if known_name in clean_name:
+                    base_tier = score
+                    break
+
+        if base_tier == 0:
+            base_tier = 50
 
         try:
             quality = float(quality_str.replace("%", "").strip())
