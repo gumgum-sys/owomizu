@@ -67,6 +67,21 @@
             "basecd": 2,
             "log_color": "#4db6c4"
         },
+        "autosell_c": {
+            "priority": 2,
+            "basecd": 2,
+            "log_color": "#229451"
+        },
+        "autosell_u": {
+            "priority": 2,
+            "basecd": 2,
+            "log_color": "#229451"
+        },
+        "autosell_r": {
+            "priority": 2,
+            "basecd": 2,
+            "log_color": "#229451"
+        },
         "weapon": {
             "priority": 1,
             "basecd": 10,

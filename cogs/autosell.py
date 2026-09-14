@@ -53,7 +53,8 @@ class AutoSell(commands.Cog):
                     "cmd_name": "sell",
                     "cmd_arguments": rarity,
                     "prefix": True,
-                    "checks": True,
+                    "checks": False,
+                    "retry_count": 0,
                     "id": f"autosell_{rarity}",
                 }
                 await self.bot.put_queue(cmd, priority=True)

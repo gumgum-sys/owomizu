@@ -647,6 +647,20 @@ class MyClient(commands.Bot):
                 await self.log(f"Error - Command data missing 'id' field. Data: {cmd_data}", "#c25560")
                 return
 
+            cid = cmd_data["id"]
+            if cid not in self.cmds_state:
+                self.cmds_state[cid] = {
+                    "in_queue": False,
+                    "in_monitor": False,
+                    "last_ran": 0
+                }
+            if cid not in self.misc.setdefault("command_info", {}):
+                self.misc["command_info"][cid] = {
+                    "priority": 2,
+                    "basecd": 2,
+                    "log_color": "#229451"
+                }
+
             if self.command_handler_status["sleep"] and not priority:
                 return
 

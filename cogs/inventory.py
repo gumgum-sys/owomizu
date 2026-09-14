@@ -65,7 +65,8 @@ class Inventory(commands.Cog):
             "cmd_name": "weapon",
             "cmd_arguments": "",
             "prefix": True,
-            "checks": True,
+            "checks": False,
+            "retry_count": 0,
             "id": "weapon",
         }
 
