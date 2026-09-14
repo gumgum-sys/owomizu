@@ -110,7 +110,7 @@ class Inventory(commands.Cog):
         others = self.bot.get_cog("Others")
         if others and hasattr(others, "current_team") and others.current_team:
             return list(others.current_team)
-        return ["dragon", "tiger", "penguin"]
+        return ["gdeer", "dragon", "tiger"]
 
     async def inventory_loop(self):
         await self.bot.wait_until_ready()
@@ -118,11 +118,11 @@ class Inventory(commands.Cog):
 
         # Fast-track startup weapon equipping for known top weapons
         known_god_weapons = [
-            ("dragon", "FMX1NN", "Glacial Axe (Mythic 81%)"),
-            ("tiger", "FMX1NK", "Fine Foul Fish (Legendary 57.7%)"),
-            ("penguin", "FMX1NL", "Vampiric Staff (Legendary 42%)")
+            ("gdeer", "FMX1NN", "Glacial Axe (Mythic 81%)"),
+            ("dragon", "FMX1NK", "Fine Foul Fish (Legendary 57.7%)"),
+            ("tiger", "FMX1NM", "Bow (Rare 42%)")
         ]
-        for pet, wid, label in known_god_weapons:
+        for i, (pet, wid, label) in enumerate(known_god_weapons):
             if self.equipped_weapons.get(pet) != wid:
                 cmd = {
                     "cmd_name": "weapon",
@@ -130,7 +130,7 @@ class Inventory(commands.Cog):
                     "prefix": True,
                     "checks": False,
                     "retry_count": 0,
-                    "id": "equip",
+                    "id": f"equip_{i+1}",
                 }
                 await self.bot.log(f"⚔️ Auto-Equip (Startup): Arming {pet} with {label} [ID: {wid}]!", "#a5d6a7")
                 await self.bot.put_queue(cmd, priority=True)
@@ -208,10 +208,10 @@ class Inventory(commands.Cog):
 
         # Check for equip confirmation: "**🗡 | User**, :pet: **pet** is now wielding Weapon!"
         if "is now wielding" in text_lower:
-            m_wield = re.search(r':([a-zA-Z0-9_]+):\s*\*\*([a-zA-Z0-9_]+)\*\*\s+is now wielding.*?(\*\*(.*?)\*\*)', text, re.IGNORECASE)
+            m_wield = re.search(r'\*\*([a-zA-Z0-9_]+)\*\*\s+is now wielding.*?\*\*(.*?)\*\*', text, re.IGNORECASE)
             if m_wield:
-                pet_name = m_wield.group(2)
-                weapon_name = m_wield.group(4)
+                pet_name = m_wield.group(1).lower()
+                weapon_name = m_wield.group(2)
                 await self.bot.log(f"✅ Weapon Equip Confirmed: {pet_name} is wielding {weapon_name}!", "#51cf66")
                 self.bot.add_dashboard_log("inventory", f"{pet_name} wielding {weapon_name}", "success")
             else:
@@ -306,7 +306,7 @@ class Inventory(commands.Cog):
                         "prefix": True,
                         "checks": False,
                         "retry_count": 0,
-                        "id": "equip",
+                        "id": f"equip_{idx+1}",
                     }
                     await self.bot.log(
                         f"⚔️ Auto-Equip: Arming Slot #{idx+1} ({pet}) with '{target_weapon['name']}' (ID: {target_weapon['id']}, score: {target_weapon['score']:.1f})!",
@@ -319,6 +319,10 @@ class Inventory(commands.Cog):
                     )
                     await self.bot.put_queue(cmd, priority=True)
                     self.equipped_weapons[pet] = target_weapon["id"]
+                    # If this weapon was previously mapped to another pet, invalidate it
+                    for other_pet, wid in list(self.equipped_weapons.items()):
+                        if other_pet != pet and wid == target_weapon["id"]:
+                            self.equipped_weapons.pop(other_pet, None)
                     await asyncio.sleep(4.0)
 
             self.checking = False

@@ -92,6 +92,21 @@
             "basecd": 3,
             "log_color": "#ffd43b"
         },
+        "equip_1": {
+            "priority": 1,
+            "basecd": 2,
+            "log_color": "#ffd43b"
+        },
+        "equip_2": {
+            "priority": 1,
+            "basecd": 2,
+            "log_color": "#ffd43b"
+        },
+        "equip_3": {
+            "priority": 1,
+            "basecd": 2,
+            "log_color": "#ffd43b"
+        },
         "owo": {
             "priority": 3,
             "basecd": 10,
