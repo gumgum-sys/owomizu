@@ -455,7 +455,7 @@ class MyClient(commands.Bot):
             "ratelimit": True,
             "rpp": self.settings_dict.get("autoRandomCommands", {}).get("enabled", False),
             "reactionbot": reaction_bot_dict["hunt_and_battle"] or reaction_bot_dict["owo"] or reaction_bot_dict["pray_and_curse"],
-            "richpresence": self.global_settings_dict.get("richPresence", {}).get("enabled", True),
+            "richpresence": False,
             "safety": self.settings_dict.get("safety", {}).get("enabled", False),
             "sell": commands_dict["sell"]["enabled"],
             "shop": commands_dict["shop"]["enabled"],
