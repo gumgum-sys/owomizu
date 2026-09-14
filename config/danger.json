@@ -1,5 +1,5 @@
 {
     "allowAutoQuest": false,
-    "allowLevelQuotes": false,
+    "allowLevelQuotes": true,
     "allowChannelSwitcher": false
 }

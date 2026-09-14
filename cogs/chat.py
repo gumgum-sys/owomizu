@@ -119,11 +119,21 @@ class Chat(commands.Cog):
                 self._timed_pause_task.cancel()
                 self._timed_pause_task = None
 
-            await self.bot.log("Resuming Mizu...", "#51cf66")
+            await self.bot.log("Resuming Mizu (Force Unfreeze)...", "#51cf66")
             self.bot.command_handler_status["state"] = True
+            self.bot.command_handler_status["rate_limited"] = False
+            self.bot.command_handler_status["sleep"] = False
+            self.bot.command_handler_status["hold_handler"] = False
             self.bot.state_event.set()
+
+            # Unpause ratelimit cog if present
+            rl_cog = self.bot.get_cog("Ratelimit")
+            if rl_cog and hasattr(rl_cog, "_paused"):
+                rl_cog._paused = False
+                rl_cog._rate_limit_count = 0
+
             self.bot.add_dashboard_log("system", "Bot resumed by user command", "success")
-            await ch.send("▶️ Bot resumed!", silent=True)
+            await ch.send("▶️ Bot resumed & unfreezed!", silent=True)
 
         elif f"{p}status" in content_lower:
             is_paused = not self.bot.command_handler_status["state"]

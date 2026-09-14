@@ -97,12 +97,12 @@
             "amount": 1
         },
         "lvlGrind": {
-            "enabled": false,
+            "enabled": true,
             "cooldown": [
-                10,
-                15
+                65,
+                95
             ],
-            "useQuoteInstead": false
+            "useQuoteInstead": true
         },
         "cookie": {
             "enabled": true,
