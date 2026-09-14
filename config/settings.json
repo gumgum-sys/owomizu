@@ -298,15 +298,15 @@
         }
     },
     "richPresence": {
-        "enabled": true,
+        "enabled": false,
         "mode": "ninja",
         "status": "online",
         "activityType": "playing",
-        "text": "OwOMIZU ON TOP",
-        "applicationId": "902025373464809482",
-        "largeImage": "1528033802260320348",
-        "largeText": "OwOMizu",
-        "smallImage": "1528030681115136060",
-        "smallText": "online"
+        "text": "",
+        "applicationId": "",
+        "largeImage": "",
+        "largeText": "",
+        "smallImage": "",
+        "smallText": ""
     }
 }

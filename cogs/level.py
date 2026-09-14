@@ -89,7 +89,7 @@ class Level(commands.Cog):
         self.cmd = {
             "cmd_name": None,
             "prefix": False,
-            "checks": True,
+            "checks": False,
             "id": "level"
         }
 
