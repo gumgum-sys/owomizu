@@ -253,6 +253,10 @@
         "enabled": true,
         "interval_minutes": 120
     },
+    "bossBattle": {
+        "enabled": true,
+        "joinChancePercent": 100
+    },
     "defaultCooldowns": {
         "longCooldown": [
             400,
