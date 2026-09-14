@@ -109,38 +109,44 @@ class Inventory(commands.Cog):
         await asyncio.sleep(timeout)
         self.checking = False
 
+    async def equip_team_weapons(self, team_names=None):
+        """Called when team rotates to immediately equip weapons."""
+        await asyncio.sleep(2.0)
+        await self.trigger_check()
+
     def _get_active_team(self):
         others = self.bot.get_cog("Others")
         if others and hasattr(others, "current_team") and others.current_team:
-            return list(others.current_team)
-        return ["gcamel", "gdeer", "gfox"]
+            filtered = [p for p in others.current_team if p != "gcamel"]
+            if filtered:
+                return filtered
+        return ["glion", "gdeer", "gfox"]
 
     async def inventory_loop(self):
         await self.bot.wait_until_ready()
-        await asyncio.sleep(6)
+        await asyncio.sleep(4)
 
-        # Fast-track startup weapon equipping for known top weapons
+        # Fast-track startup weapon equipping for active squad
         known_god_weapons = [
-            ("gcamel", "FMX1NN", "Glacial Axe (Mythic 81%)"),
-            ("gdeer", "FN269J", "Culling Scythe (Epic 67.6%)"),
-            ("gfox", "FMX1NJ", "Culling Scythe [0] (Epic 62%)")
+            ("glion", "FMX1NN", "Glacial Axe (Mythic 81%)"),
+            ("gdeer", "FN2XJJ", "Poison Dagger (Epic 67.8%)"),
+            ("gfox", "FN269J", "Culling Scythe (Epic 67.6%)")
         ]
         for i, (pet, wid, label) in enumerate(known_god_weapons):
-            if self.equipped_weapons.get(pet) != wid:
-                cmd = {
-                    "cmd_name": "weapon",
-                    "cmd_arguments": f"{wid} {pet}",
-                    "prefix": True,
-                    "checks": False,
-                    "retry_count": 0,
-                    "id": f"equip_{i+1}",
-                }
-                await self.bot.log(f"⚔️ Auto-Equip (Startup): Arming {pet} with {label} [ID: {wid}]!", "#a5d6a7")
-                await self.bot.put_queue(cmd, priority=True)
-                self.equipped_weapons[pet] = wid
-                await asyncio.sleep(4.0)
+            cmd = {
+                "cmd_name": "weapon",
+                "cmd_arguments": f"{wid} {pet}",
+                "prefix": True,
+                "checks": False,
+                "retry_count": 0,
+                "id": f"equip_{i+1}",
+            }
+            await self.bot.log(f"⚔️ Auto-Equip (Startup): Arming {pet} with {label} [ID: {wid}]!", "#a5d6a7")
+            await self.bot.put_queue(cmd, priority=True)
+            self.equipped_weapons[pet] = wid
+            await asyncio.sleep(3.0)
 
-        await asyncio.sleep(12)
+        await asyncio.sleep(6)
         await self.trigger_check()
 
         while not self.bot.is_closed():
