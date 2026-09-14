@@ -341,7 +341,14 @@ class Captcha(commands.Cog):
                 if on_mobile:
                     run_system_command(f"termux-media-player play {path}", timeout=5, retry=True)
                 else:
-                    playsound(path, block=False)
+                    if path and os.path.isfile(path):
+                        playsound(path, block=False)
+                    elif sys.platform == "win32":
+                        import winsound
+                        threading.Thread(
+                            target=lambda: [winsound.Beep(1200, 350) or time.sleep(0.1) for _ in range(4)],
+                            daemon=True
+                        ).start()
             except Exception as e:
                 print(f"{e} - at audio")
 
