@@ -1,4 +1,4 @@
-_DEFAULT_NAME = "OwOMIZU ON TOP"
+_DEFAULT_NAME = ""
 
 _ACTIVITY_TYPES = {
     "playing": 0,

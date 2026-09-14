@@ -38,6 +38,10 @@ class RichPresence(commands.Cog):
             return
         try:
             cfg = self.bot.settings_dict.get("richPresence", {})
+            if not cfg.get("enabled", False):
+                # STEALTH MODE: Zero custom selfbot activity broadcast on Discord profile
+                await self.bot.change_presence(activity=None, status=self._get_discord_status())
+                return
             activity = discord.Activity(**build_activity_kwargs(cfg))
             await self.bot.change_presence(activity=activity, status=self._get_discord_status())
         except Exception as e:
