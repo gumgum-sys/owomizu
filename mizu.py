@@ -262,17 +262,30 @@ def popup_main_loop():
 def handle_weekly_runtime(path="utils/data/weekly_runtime.json"):
     while True:
         try:
-            with open(path, "r") as config_file:
-                weekly_runtime_dict = json.load(config_file)
+            weekly_runtime_dict = None
+            if os.path.exists(path) and os.path.getsize(path) > 0:
+                try:
+                    with open(path, "r") as config_file:
+                        weekly_runtime_dict = json.load(config_file)
+                except Exception:
+                    weekly_runtime_dict = None
+
+            if not isinstance(weekly_runtime_dict, dict):
+                weekly_runtime_dict = _default_weekly_runtime()
+
             weekday = get_weekday()
+            if weekday not in weekly_runtime_dict:
+                weekly_runtime_dict[weekday] = [0, 0]
 
             if weekly_runtime_dict[weekday][0] == 0:
                 weekly_runtime_dict[weekday][0], weekly_runtime_dict[weekday][1] = time.time(), time.time()
             else:
                 weekly_runtime_dict[weekday][1] = time.time()
 
-            with open(path, "w") as f:
+            tmp_path = f"{path}.tmp"
+            with open(tmp_path, "w") as f:
                 json.dump(weekly_runtime_dict, f, indent=4)
+            os.replace(tmp_path, path)
 
         except Exception as e:
             print(f"Error when handling weekly runtime:\n{e}")
