@@ -124,6 +124,7 @@ class Chat(commands.Cog):
             self.bot.command_handler_status["rate_limited"] = False
             self.bot.command_handler_status["sleep"] = False
             self.bot.command_handler_status["hold_handler"] = False
+            self.bot.command_handler_status["captcha"] = False
             self.bot.state_event.set()
 
             # Unpause ratelimit cog if present
@@ -133,7 +134,7 @@ class Chat(commands.Cog):
                 rl_cog._rate_limit_count = 0
 
             self.bot.add_dashboard_log("system", "Bot resumed by user command", "success")
-            await ch.send("▶️ Bot resumed & unfreezed!", silent=True)
+            await ch.send("▶️ Bot resumed & unfreezed (captcha flag cleared)!", silent=True)
 
         elif f"{p}status" in content_lower:
             is_paused = not self.bot.command_handler_status["state"]

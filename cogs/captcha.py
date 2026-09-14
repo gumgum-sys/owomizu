@@ -31,7 +31,7 @@ try:
 except ImportError:
     pass
 
-list_captcha = ["human", "captcha", "link", "letterword"]
+list_captcha = ["human", "captcha", "letterword", "verify that you"]
 
 WRONG_ANSWER_PHRASES = [
     "wrong answer",
@@ -648,6 +648,8 @@ class Captcha(commands.Cog):
                     )
             elif message.embeds:
                 for embed in message.embeds:
+                    if embed.title and "command list" in embed.title.lower():
+                        continue
                     items = {
                         embed.title if embed.title else "",
                         embed.author.name if embed.author else "",
