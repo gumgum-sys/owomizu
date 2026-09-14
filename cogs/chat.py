@@ -144,12 +144,37 @@ class Chat(commands.Cog):
                 silent=True,
             )
 
+        elif f"{p}weapon" in content_lower:
+            inv_cog = self.bot.get_cog("Inventory")
+            if inv_cog and hasattr(inv_cog, "trigger_check"):
+                await inv_cog.trigger_check(delay=0.0)
+                await ch.send("🗡️ Weapon check triggered!", silent=True)
+            else:
+                await ch.send("⚠️ Inventory cog not loaded!", silent=True)
+
+        elif content_lower.startswith(f"{p}equip"):
+            parts = content.split()
+            if len(parts) >= 2:
+                target_wid = parts[1].strip()
+                cmd = {
+                    "cmd_name": "equip",
+                    "cmd_arguments": target_wid,
+                    "prefix": True,
+                    "checks": True,
+                    "id": "equip"
+                }
+                await self.bot.put_queue(cmd, priority=True)
+                await ch.send(f"⚔️ Queued equip for `{target_wid}`!", silent=True)
+            else:
+                await ch.send(f"Usage: `{p}equip <weapon_id>` (e.g. `{p}equip FMX1NN`)", silent=True)
+
         elif f"{p}restart" in content_lower:
             await self.bot.log("Restarting Mizu...", "#e0aa3e")
             self.bot.add_dashboard_log("system", "Bot restarting by user command", "warning")
             await self.bot.close()
             import sys
             os.execl(sys.executable, sys.executable, *sys.argv)
+
 
 
 async def setup(bot):

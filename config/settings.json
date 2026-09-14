@@ -103,8 +103,8 @@
             "useQuoteInstead": false
         },
         "cookie": {
-            "enabled": false,
-            "userid": 0,
+            "enabled": true,
+            "userid": 703014513359716372,
             "pingUser": false
         },
         "shop": {
