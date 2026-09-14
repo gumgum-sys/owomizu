@@ -21,7 +21,7 @@ class AutoSell(commands.Cog):
                 pass
 
     async def cog_unload(self):
-        for r in ["c", "u", "r", "e"]:
+        for r in ["c", "u", "r", "e", "m"]:
             await self.bot.remove_queue(id=f"autosell_{r}")
 
     async def trigger_auto_sell(self):

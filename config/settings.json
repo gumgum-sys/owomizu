@@ -57,7 +57,9 @@
             "rarity": [
                 "c",
                 "u",
-                "r"
+                "r",
+                "e",
+                "m"
             ]
         },
         "sac": {
@@ -237,7 +239,7 @@
     "autoSell": {
         "enabled": true,
         "triggerEveryNHunts": 5,
-        "sellCommand": ["c", "u", "r"],
+        "sellCommand": ["c", "u", "r", "e", "m"],
         "maxTriggersPerHour": 15,
         "cooldownAfterSell": [
             30,

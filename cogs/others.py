@@ -226,7 +226,10 @@ class Others(commands.Cog):
 
             # --- Dynamic Era Evolution: auto-adjust sell rarity scope based on team tier ---
             lowest_weight = min(a["weight"] for a in animals)
-            if lowest_weight >= 70:        # Mythical / Legendary / Fabled
+            if lowest_weight >= 80:        # Legendary / Gem / Fabled (All team members Legendary+)
+                era_name = "LEGENDARY ERA 👑"
+                sell_rarity = ["c", "u", "r", "e", "m"]
+            elif lowest_weight >= 70:      # Mythical
                 era_name = "MYTHICAL ERA 🔮"
                 sell_rarity = ["c", "u", "r", "e"]
             elif lowest_weight >= 60:      # Epic
