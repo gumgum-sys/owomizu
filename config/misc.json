@@ -38,8 +38,8 @@
             "log_color": "#4db6c4"
         },
         "zoo": {
-            "priority": 3,
-            "basecd": 45,
+            "priority": 1,
+            "basecd": 5,
             "log_color": "#4db6c4"
         },
         "team": {

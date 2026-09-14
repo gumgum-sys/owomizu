@@ -165,7 +165,7 @@ class Others(commands.Cog):
             "id": "zoo",
         }
         await self.bot.sleep_till([1.5, 3.0])
-        await self.bot.put_queue(zoo_cmd, priority=True)
+        await self.bot.put_queue(zoo_cmd, priority=True, quick=True)
         await self.bot.log("🦁 Requesting Zoo audit for optimal battle team...", "#4db6c4")
 
     async def on_rare_catch(self, catch_data):
