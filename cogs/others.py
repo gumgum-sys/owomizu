@@ -15,8 +15,8 @@ except (FileNotFoundError, json.JSONDecodeError):
 RANK_WEIGHTS = {
     "hidden": 100,
     "fabled": 90,
-    "gem": 85,
-    "legendary": 80,
+    "legendary": 85,
+    "gem": 80,
     "mythical": 70,
     "epic": 60,
     "rare": 40,
