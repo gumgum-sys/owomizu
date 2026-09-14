@@ -92,6 +92,16 @@
             "basecd": 2,
             "log_color": "#229451"
         },
+        "sell_gcamel": {
+            "priority": 2,
+            "basecd": 2,
+            "log_color": "#ffd43b"
+        },
+        "sell_manual": {
+            "priority": 2,
+            "basecd": 2,
+            "log_color": "#ffd43b"
+        },
         "weapon": {
             "priority": 1,
             "basecd": 10,

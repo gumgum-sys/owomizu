@@ -168,6 +168,22 @@ class Chat(commands.Cog):
             else:
                 await ch.send(f"Usage: `{p}equip <weapon_id>` (e.g. `{p}equip FMX1NN`)", silent=True)
 
+        elif content_lower.startswith(f"{p}sell"):
+            parts = content.split()
+            if len(parts) >= 2:
+                target_arg = " ".join(parts[1:])
+                cmd = {
+                    "cmd_name": "sell",
+                    "cmd_arguments": target_arg,
+                    "prefix": True,
+                    "checks": False,
+                    "id": "sell_manual"
+                }
+                await self.bot.put_queue(cmd, priority=True)
+                await ch.send(f"🛒 Queued sell command for `{target_arg}`!", silent=True)
+            else:
+                await ch.send(f"Usage: `{p}sell <animal/rarity>` (e.g. `{p}sell gcamel`)", silent=True)
+
         elif f"{p}restart" in content_lower:
             await self.bot.log("Restarting Mizu...", "#e0aa3e")
             self.bot.add_dashboard_log("system", "Bot restarting by user command", "warning")
