@@ -199,6 +199,18 @@ class Others(commands.Cog):
             await self.bot.log(f"⚔️ Rotating Battle Team positions: {desc}", "#ffd43b")
             self.bot.add_dashboard_log("battle", f"Rotating team: {desc}", "info")
 
+            # Clear team first to avoid slot swap collisions
+            clear_cmd = {
+                "cmd_name": "team",
+                "cmd_arguments": "clear",
+                "prefix": True,
+                "checks": False,
+                "retry_count": 0,
+                "id": "team_clear",
+            }
+            await self.bot.put_queue(clear_cmd, priority=True)
+            await asyncio.sleep(self.bot.random.uniform(2.0, 3.0))
+
             # Directly set positions 1, 2, 3 using discrete command IDs
             slot_ids = ["team_1", "team_2", "team_3"]
             for idx, beast in enumerate(animals[:3]):
