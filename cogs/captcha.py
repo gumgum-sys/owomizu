@@ -404,8 +404,12 @@ class Captcha(commands.Cog):
             else:
                 return
 
-        if message.channel.id == self.bot.dm.id and message.author.id == self.bot.owo_bot_id:
-            if "I have verified that you are human! Thank you! :3" in message.content:
+        dm_id = self.bot.dm.id if self.bot.dm else None
+        cm_id = self.bot.cm.id if hasattr(self.bot, "cm") and self.bot.cm else None
+        valid_channels = {cid for cid in [dm_id, cm_id] if cid is not None}
+
+        if message.channel.id in valid_channels and message.author.id == self.bot.owo_bot_id:
+            if "verified that you are human" in message.content.lower() or "thank you for verifying" in message.content.lower():
                 if self._kill_task and not self._kill_task.done():
                     self._kill_task.cancel()
                     self._kill_task = None
@@ -480,6 +484,9 @@ class Captcha(commands.Cog):
                 "please complete your captcha",
                 "verify that you are human",
                 "complete captcha to continue",
+                "are you a real human",
+                "use the link below",
+                "within 10 minutes or it may result in a ban",
             ]
             if any(phrase in content_lower_raw for phrase in CAPTCHA_PLAIN_PHRASES):
                 is_dm = get_channel_name(message.channel) == "owo DMs"
