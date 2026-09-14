@@ -112,21 +112,6 @@ class Others(commands.Cog):
         await self.bot.wait_until_ready()
         await asyncio.sleep(self.bot.random.uniform(6.0, 10.0))
 
-        # Liquidate benched gcamel for 30,000 Cowoncy
-        if self.bot.settings_dict.get("liquidateGcamel", True):
-            sell_cmd = {
-                "cmd_name": "sell",
-                "cmd_arguments": "gcamel",
-                "prefix": True,
-                "checks": False,
-                "retry_count": 0,
-                "id": "sell_gcamel",
-            }
-            await self.bot.log("💰 Liquidating benched gcamel for ~30,000 Cowoncy!", "#ffd43b")
-            await self.bot.put_queue(sell_cmd, priority=True)
-            self.bot.settings_dict["liquidateGcamel"] = False
-
-        await asyncio.sleep(self.bot.random.uniform(14.0, 20.0))
         auto_use = self.bot.settings_dict.get("autoUse", {})
         if auto_use.get("autoCrate", False):
             await self.bot.log("🎁 Startup: Opening available crates...", "#E7DA90")
