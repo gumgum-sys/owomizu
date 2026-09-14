@@ -199,17 +199,20 @@ class Others(commands.Cog):
             await self.bot.log(f"⚔️ Rotating Battle Team positions: {desc}", "#ffd43b")
             self.bot.add_dashboard_log("battle", f"Rotating team: {desc}", "info")
 
-            # Clear team first to avoid slot swap collisions
-            clear_cmd = {
-                "cmd_name": "team",
-                "cmd_arguments": "clear",
-                "prefix": True,
-                "checks": False,
-                "retry_count": 0,
-                "id": "team_clear",
-            }
-            await self.bot.put_queue(clear_cmd, priority=True)
-            await asyncio.sleep(self.bot.random.uniform(2.0, 3.0))
+            # Remove any current team members not in the target team
+            if self.current_team:
+                for old in list(self.current_team):
+                    if old not in names:
+                        rem_cmd = {
+                            "cmd_name": "team",
+                            "cmd_arguments": f"remove {old}",
+                            "prefix": True,
+                            "checks": False,
+                            "retry_count": 0,
+                            "id": "team",
+                        }
+                        await self.bot.put_queue(rem_cmd, priority=True)
+                        await asyncio.sleep(self.bot.random.uniform(1.5, 2.2))
 
             # Directly set positions 1, 2, 3 using discrete command IDs
             slot_ids = ["team_1", "team_2", "team_3"]
@@ -408,6 +411,34 @@ class Others(commands.Cog):
             or "you do not have an active battle team" in content_lower
         ):
             await self.request_team_refresh(force=True)
+
+        elif "your team:" in content_lower:
+            found_pets = []
+            for em in re.findall(r'<a:[a-zA-Z0-9_]+:[0-9]+>', content):
+                if em in emoji_dict:
+                    found_pets.append(emoji_dict[em].get("name"))
+            if found_pets:
+                self.current_team = found_pets
+                await self.bot.log(f"📋 Live Team Sync: {found_pets}", "#4db6c4")
+                if "gcamel" in found_pets and "gdeer" not in found_pets:
+                    await self.bot.log("🦁 Swapping gcamel with gdeer for Full Legendary Squad!", "#ffd43b")
+                    rem_cmd = {
+                        "cmd_name": "team",
+                        "cmd_arguments": "remove gcamel",
+                        "prefix": True,
+                        "checks": False,
+                        "id": "team",
+                    }
+                    add_cmd = {
+                        "cmd_name": "team",
+                        "cmd_arguments": "add gdeer 1",
+                        "prefix": True,
+                        "checks": False,
+                        "id": "team_1",
+                    }
+                    await self.bot.put_queue(rem_cmd, priority=True)
+                    await asyncio.sleep(1.5)
+                    await self.bot.put_queue(add_cmd, priority=True)
 
         elif "zoo!" in content_lower and self.zoo:
             self.zoo = False
