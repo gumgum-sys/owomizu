@@ -113,7 +113,7 @@ class Inventory(commands.Cog):
         others = self.bot.get_cog("Others")
         if others and hasattr(others, "current_team") and others.current_team:
             return list(others.current_team)
-        return ["gdeer", "gfox", "dragon"]
+        return ["gcamel", "gdeer", "gfox"]
 
     async def inventory_loop(self):
         await self.bot.wait_until_ready()
@@ -121,8 +121,8 @@ class Inventory(commands.Cog):
 
         # Fast-track startup weapon equipping for known top weapons
         known_god_weapons = [
-            ("gdeer", "FMX1NN", "Glacial Axe (Mythic 81%)"),
-            ("dragon", "FN269J", "Culling Scythe (Epic 67.6%)"),
+            ("gcamel", "FMX1NN", "Glacial Axe (Mythic 81%)"),
+            ("gdeer", "FN269J", "Culling Scythe (Epic 67.6%)"),
             ("gfox", "FMX1NJ", "Culling Scythe [0] (Epic 62%)")
         ]
         for i, (pet, wid, label) in enumerate(known_god_weapons):

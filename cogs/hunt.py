@@ -18,7 +18,7 @@ _EMOJI_PATTERN = re.compile(
 
 _RANK_ORDER = {
     "common": 1, "uncommon": 2, "rare": 3, "epic": 4,
-    "mythical": 5, "gem": 6, "legendary": 7, "fabled": 8, "hidden": 9,
+    "mythical": 5, "legendary": 6, "gem": 7, "fabled": 8, "hidden": 9,
 }
 
 
@@ -176,7 +176,24 @@ class Hunt(commands.Cog):
                 return
             if "you found:" in message.content.lower() or "caught" in message.content.lower():
                 lines = message.content.splitlines()
-                target_line = lines[0] if "caught" in message.content.lower() else lines[1]
+                content_lower = message.content.lower()
+                if "caught" in content_lower:
+                    target_line = lines[0]
+                elif "you found:" in content_lower:
+                    found_lines = []
+                    capture = False
+                    for line in lines:
+                        if "you found:" in line.lower():
+                            capture = True
+                            found_lines.append(line)
+                        elif capture:
+                            if "gained" in line.lower():
+                                break
+                            found_lines.append(line)
+                    target_line = " ".join(found_lines) if found_lines else lines[1]
+                else:
+                    target_line = message.content
+
                 await self._maybe_send_animal_webhook(target_line)
 
                 catches, highest = _parse_catches(target_line)
