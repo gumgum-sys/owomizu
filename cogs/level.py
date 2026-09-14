@@ -2,14 +2,13 @@
 
 import string
 import random
+import aiohttp
 
 from discord.ext import commands
 from discord.ext.commands import ExtensionNotLoaded
 import asyncio
 
 from utils.danger import is_allowed
-
-quotes_url = "https://favqs.com/api/qotd"
 
 def generate_random_string(min, max):
 
@@ -60,17 +59,28 @@ FALLBACK_QUOTES = [
     "The only person you should try to be better than is who you were yesterday."
 ]
 
-async def fetch_quotes(session):
-    try:
-        async with session.get(quotes_url, timeout=5) as response:
-            if response.status == 200:
-                data = await response.json()
-                quote = data.get("quote", {}).get("body")
-                if quote and len(quote) < 140:
-                    return quote
-    except Exception:
-        pass
-    return random.choice(FALLBACK_QUOTES)
+_last_used_quote = None
+
+async def get_varied_quote(session=None):
+    global _last_used_quote
+    # Attempt to fetch diverse live quote from external API
+    if session and not session.closed:
+        try:
+            async with session.get("https://dummyjson.com/quotes/random", timeout=aiohttp.ClientTimeout(total=4)) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    quote = data.get("quote")
+                    if quote and len(quote) < 130 and quote != _last_used_quote:
+                        _last_used_quote = quote
+                        return quote
+        except Exception:
+            pass
+
+    # Pick from curated candidate pool without repeating
+    candidates = [q for q in FALLBACK_QUOTES if q != _last_used_quote]
+    chosen = random.choice(candidates) if candidates else random.choice(FALLBACK_QUOTES)
+    _last_used_quote = chosen
+    return chosen
 
 class Level(commands.Cog):
     def __init__(self, bot):
@@ -100,7 +110,7 @@ class Level(commands.Cog):
 
     async def level_grind_loop(self):
         await self.bot.wait_until_ready()
-        await asyncio.sleep(self.bot.random.uniform(15.0, 25.0))
+        await asyncio.sleep(self.bot.random.uniform(20.0, 35.0))
 
         while not self.bot.is_closed():
             try:
@@ -108,15 +118,19 @@ class Level(commands.Cog):
                 if not cnf.get("enabled", False):
                     break
 
-                cd_range = cnf.get("cooldown", [65, 95])
-                cd = self.bot.random.uniform(cd_range[0], cd_range[1])
+                # Strict delay enforcement: Guaranteed 75 to 110 seconds (never under 1 minute!)
+                cd_range = cnf.get("cooldown", [75, 110])
+                min_cd = max(70.0, float(cd_range[0]))
+                max_cd = max(min_cd + 15.0, float(cd_range[1]))
+                cd = self.bot.random.uniform(min_cd, max_cd)
+
                 await asyncio.sleep(cd)
 
                 if not self.bot.command_handler_status.get("state", True):
                     continue
 
                 if cnf.get("useQuoteInstead", True) and is_allowed("allowLevelQuotes"):
-                    quote_text = await fetch_quotes(self.bot.session)
+                    quote_text = await get_varied_quote(getattr(self.bot, "session", None))
                 else:
                     quote_text = generate_random_string(
                         cnf.get("minLengthForRandomString", 10),
@@ -125,7 +139,7 @@ class Level(commands.Cog):
 
                 self.cmd["cmd_name"] = quote_text
                 await self.bot.put_queue(self.cmd)
-                await self.bot.log(f"💬 Level Grind (XP Farm): \"{quote_text[:35]}...\"", "#977bab")
+                await self.bot.log(f"💬 Level Grind [Next in {int(cd)}s]: \"{quote_text[:35]}...\"", "#977bab")
 
             except asyncio.CancelledError:
                 break

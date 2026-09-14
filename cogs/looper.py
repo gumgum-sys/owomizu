@@ -9,22 +9,7 @@ import aiohttp
 from discord.ext import commands
 from discord.ext.commands import ExtensionNotLoaded
 
-_LOOPABLE = ["owo", "pray", "curse", "level"]
-
-
-def _random_string(min_len: int, max_len: int) -> str:
-    chars = string.ascii_lowercase + " "
-    return "".join(random.choice(chars) for _ in range(random.randint(min_len, max_len)))
-
-
-async def _fetch_quote(session: aiohttp.ClientSession) -> str | None:
-    try:
-        async with session.get("https://favqs.com/api/qotd", timeout=aiohttp.ClientTimeout(total=8)) as r:
-            if r.status == 200:
-                data = await r.json()
-                return data.get("quote", {}).get("body")
-    except Exception:
-        return None
+_LOOPABLE = ["owo", "pray", "curse"]
 
 
 def _pray_arg(userids: list, ping: bool) -> str:
@@ -49,7 +34,6 @@ class Looper(commands.Cog):
             "owo": commands_dict.get("owo", {}),
             "pray": commands_dict.get("pray", {}),
             "curse": commands_dict.get("curse", {}),
-            "level": commands_dict.get("lvlGrind", {}),
         }
         return mapping[key]
 
@@ -62,7 +46,6 @@ class Looper(commands.Cog):
             "owo": self._cfg("owo").get("enabled", False) and not rx.get("owo", False),
             "pray": self._cfg("pray").get("enabled", False) and not rx.get("pray_and_curse", False),
             "curse": self._cfg("curse").get("enabled", False) and not rx.get("pray_and_curse", False),
-            "level": self._cfg("level").get("enabled", False),
         }
 
     def _next_run(self, cmd: str) -> float:
@@ -107,32 +90,11 @@ class Looper(commands.Cog):
             "channel": custom.get("channelId") if custom.get("enabled") else None,
         }
 
-    async def _build_level_cmd(self) -> dict:
-        cnf = self._cfg("level")
-        if cnf.get("useQuoteInstead", False) and hasattr(self.bot, "session"):
-            msg = await _fetch_quote(self.bot.session) or _random_string(
-                cnf.get("minLengthForRandomString", 10),
-                cnf.get("maxLengthForRandomString", 30),
-            )
-        else:
-            msg = _random_string(
-                cnf.get("minLengthForRandomString", 10),
-                cnf.get("maxLengthForRandomString", 30),
-            )
-        return {
-            "cmd_name": msg,
-            "prefix": False,
-            "checks": False,
-            "id": "level",
-        }
-
     async def _dispatch(self, cmd: str):
         if cmd == "owo":
             await self.bot.put_queue(await self._build_owo_cmd(), quick=True)
         elif cmd in ("pray", "curse"):
             await self.bot.put_queue(await self._build_pray_curse_cmd(cmd), priority=True)
-        elif cmd == "level":
-            await self.bot.put_queue(await self._build_level_cmd())
         self._startup = False
 
     async def _loop(self):
@@ -173,7 +135,7 @@ class Looper(commands.Cog):
         self._running = False
         if self._task:
             self._task.cancel()
-        for cmd_id in ("owo", "pray", "level"):
+        for cmd_id in ("owo", "pray", "curse"):
             await self.bot.remove_queue(id=cmd_id)
 
 

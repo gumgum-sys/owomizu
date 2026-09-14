@@ -99,8 +99,8 @@
         "lvlGrind": {
             "enabled": true,
             "cooldown": [
-                65,
-                95
+                75,
+                110
             ],
             "useQuoteInstead": true
         },

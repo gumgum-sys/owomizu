@@ -179,7 +179,7 @@
         },
         "level": {
             "priority": 8,
-            "basecd": 15,
+            "basecd": 65,
             "log_color": "#434a46"
         },
         "sell": {
