@@ -75,7 +75,7 @@ class Huntbot(commands.Cog):
             except ExtensionNotLoaded:
                 pass
         else:
-            await self.bot.log("Huntbot is active - Hunt and Battle commands are automatically disabled", "#afaf87")
+            await self.bot.log("🤖 Huntbot is active - Running simultaneously with Hunt & Battle!", "#afaf87")
             asyncio.create_task(self.send_ah(startup=True))
 
     async def cog_unload(self):

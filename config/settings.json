@@ -127,8 +127,8 @@
             ]
         },
         "autoHuntBot": {
-            "enabled": false,
-            "cashToSpend": 10000,
+            "enabled": true,
+            "cashToSpend": 1000,
             "upgrader": {
                 "enabled": true,
                 "sleeptime": [
@@ -136,12 +136,12 @@
                     15
                 ],
                 "priorities": {
+                    "duration": 5,
+                    "radar": 5,
                     "efficiency": 4,
-                    "duration": 2,
-                    "cost": 5,
                     "gain": 4,
-                    "exp": 3,
-                    "radar": 1
+                    "cost": 3,
+                    "exp": 2
                 }
             }
         }
@@ -238,6 +238,7 @@
     },
     "autoSell": {
         "enabled": true,
+        "action": "sacrifice",
         "triggerEveryNHunts": 5,
         "sellCommand": ["c", "u", "r", "e", "m"],
         "maxTriggersPerHour": 15,

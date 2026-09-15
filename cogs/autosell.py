@@ -42,15 +42,21 @@ class AutoSell(commands.Cog):
             if isinstance(sell_rarities, str):
                 sell_rarities = [sell_rarities]
 
-            trigger_n = self.bot.settings_dict["autoSell"].get("triggerEveryNHunts", 10)
+            action = self.bot.settings_dict.get("autoSell", {}).get("action", "sacrifice")
+            cmd_action = "sac" if action in ("sacrifice", "sac") else "sell"
+            action_name = "AutoSacrifice" if cmd_action == "sac" else "AutoSell"
+            action_verb = "Sacrificing" if cmd_action == "sac" else "Selling"
+
+            trigger_n = self.bot.settings_dict["autoSell"].get("triggerEveryNHunts", 5)
             await self.bot.log(
-                f"🛒 AutoSell [tiap {trigger_n} hunt]: Selling {sell_rarities}", "#ffd43b"
+                f"🔮 {action_name} [tiap {trigger_n} hunt]: {action_verb} {sell_rarities} for {'Essence' if cmd_action == 'sac' else 'Cowoncy'}",
+                "#a29bfe" if cmd_action == "sac" else "#ffd43b"
             )
-            self.bot.add_dashboard_log("autosell", f"Hunt-triggered sell: {sell_rarities}", "info")
+            self.bot.add_dashboard_log("autosell", f"Hunt-triggered {action}: {sell_rarities}", "info")
 
             for idx, rarity in enumerate(sell_rarities):
                 cmd = {
-                    "cmd_name": "sell",
+                    "cmd_name": cmd_action,
                     "cmd_arguments": rarity,
                     "prefix": True,
                     "checks": False,
@@ -84,6 +90,14 @@ class AutoSell(commands.Cog):
         content = self.bot.extract_text(message)
         content_lower = content.lower()
 
+        # Detect sacrifice completion (Essence gained)
+        if "you sacrificed" in content_lower and "essence" in content_lower:
+            m = re.search(r'gained \*\*([\d,]+)\*\* essence', content_lower) or re.search(r'gained ([\d,]+) essence', content_lower)
+            essence = int(m.group(1).replace(',', '')) if m else 0
+            await self.bot.log(f"✨ AutoSacrifice: Sacrificed animals! +{essence:,} essence", "#a29bfe")
+            self.bot.add_dashboard_log("autosell", f"Sacrifice completed (+{essence:,} essence)", "success")
+            return
+
         # Detect sell completion
         if "for a total of **<:cowoncy:" in content_lower:
             m = re.search(r'for a total of \*\*<:cowoncy:\d+> ([\d,]+)', content)
@@ -95,7 +109,7 @@ class AutoSell(commands.Cog):
             return
 
         if "couldn't find any animals" in content_lower or "no animals found" in content_lower:
-            await self.bot.log("ℹ️ AutoSell: No animals found for this rarity.", "#888888")
+            await self.bot.log("ℹ️ AutoSell/Sac: No animals found for this rarity.", "#888888")
             return
 
         # Detect hunt result: "gained **NNxp**!" — unik untuk hunt, bukan battle
