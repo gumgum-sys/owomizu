@@ -128,7 +128,7 @@
         },
         "autoHuntBot": {
             "enabled": true,
-            "cashToSpend": 1000,
+            "cashToSpend": 290,
             "upgrader": {
                 "enabled": true,
                 "sleeptime": [

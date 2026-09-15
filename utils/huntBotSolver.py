@@ -13,10 +13,12 @@ except ImportError:
     Image = None
 
 priority_groups = [
-    list("abdegkmpqstvwxyz"),
-    list("fho"),
+    list("qpyjgbdhkt"),
+    list("amnosuvwxz"),
+    list("e"),
+    list("fh"),
     list("cnru"),
-    list("jl"),
+    list("l"),
     list("i"),
 ]
 

@@ -177,6 +177,16 @@ class Huntbot(commands.Cog):
 
         elif "Wrong password" in message.content or "Incorrect password" in message.content:
             await self.bot.log(f"huntbot wrong password - captcha solver failed. Waiting for password reset...", "#c25560")
+            cost_match = re.search(r"autohunt (\d+)", message.content)
+            if cost_match:
+                new_cost = int(cost_match.group(1))
+                self.bot.settings_dict["commands"]["autoHuntBot"]["cashToSpend"] = new_cost
+                await self.bot.log(f"huntbot: auto-adjusted cashToSpend to {new_cost}", "#afaf87")
+
+            reset_match = re.search(r"reset in (\d+)", message.content)
+            if reset_match:
+                total_seconds = int(reset_match.group(1)) * 60
+                await self.send_ah(timeToSleep=total_seconds)
 
         elif "You successfully upgraded" in message.content:
             self.upgrade_event.set()
