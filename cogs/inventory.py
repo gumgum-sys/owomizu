@@ -9,6 +9,7 @@ TIER_SCORES = {
     "glacial axe": 1000,
     "abyssal glaive": 1000,
     "scythe of the reaper": 1000,
+    "healing staff": 1000,
 
     # Fabled Tier (base 900)
     "fabled": 900,
@@ -150,7 +151,7 @@ class Inventory(commands.Cog):
         # Fast-track startup weapon equipping for active squad
         known_god_weapons = [
             ("glion", "FMX1NN", "Glacial Axe (Mythic 81%)"),
-            ("gdeer", "FN2XJG", "Staff of Corruption (Epic 67.2%)"),
+            ("gdeer", "FNCU53", "Healing Staff (Mythic 84.6%)"),
             ("gfox", "FN269J", "Culling Scythe (Epic 67.6%)")
         ]
         for i, (pet, wid, label) in enumerate(known_god_weapons):
