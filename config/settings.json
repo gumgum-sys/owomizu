@@ -33,16 +33,16 @@
         "hunt": {
             "enabled": true,
             "cooldown": [
-                24,
-                32
+                15,
+                18
             ],
             "useShortForm": true
         },
         "battle": {
             "enabled": true,
             "cooldown": [
-                16,
-                22
+                90,
+                130
             ],
             "useShortForm": true,
             "showStreakInConsole": true,
