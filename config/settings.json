@@ -136,12 +136,12 @@
                     15
                 ],
                 "priorities": {
+                    "gain": 5,
                     "duration": 5,
-                    "radar": 5,
                     "efficiency": 4,
-                    "gain": 4,
-                    "cost": 3,
-                    "exp": 2
+                    "cost": 4,
+                    "radar": 2,
+                    "exp": 1
                 }
             }
         }
